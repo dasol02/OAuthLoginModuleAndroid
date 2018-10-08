@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">OAuthLoginModuleAndroid</string>
+    <string name="kakao_app_key">3518487ea1bd3a639d1fdf1ffea5bd28</string>
 </resources>
