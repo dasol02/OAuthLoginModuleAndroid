@@ -15,15 +15,24 @@
         android:layout_height="wrap_content">
         <Button
             android:layout_weight="1"
-            android:id="@+id/button_user_frofile"
-            android:text="UserFrofile"
+            android:layout_below="@id/button_login"
+            android:id="@+id/button_delete"
+            android:text="DELETE"
+            android:layout_width="0dp"
+            android:layout_height="60dp" />
+
+        <Button
+            android:layout_weight="1"
+            android:layout_below="@id/button_login"
+            android:id="@+id/button_lougot"
+            android:text="LOGOUT"
             android:layout_width="0dp"
             android:layout_height="60dp" />
 
         <Button
             android:layout_weight="1"
             android:text="LOGIN"
-            android:id="@+id/button_login_view_go"
+            android:id="@+id/button_login"
             android:layout_width="0dp"
             android:layout_height="60dp"
             android:layout_gravity="center_horizontal"/>

@@ -21,6 +21,9 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".LoginActivity"/>
+
+
         <meta-data
             android:name="com.kakao.sdk.AppKey"
             android:value="@string/kakao_app_key" />
