@@ -1,7 +1,5 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -13,20 +11,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.kakao.auth.AuthType;
-import com.kakao.auth.Session;
-import com.kakao.network.ErrorResult;
-import com.kakao.usermgmt.UserManagement;
-import com.kakao.usermgmt.callback.LogoutResponseCallback;
-import com.kakao.usermgmt.callback.UnLinkResponseCallback;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.SessionCallback;
-
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManagerInterface;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    SessionCallback callback;
-    Button button_lougot,button_login;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, OAuthManagerInterface {
+
+    Button button_lougot,button_login,button_delete;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,26 +32,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         button_login = (Button)findViewById(R.id.button_login);
         button_login.setOnClickListener(this);
 
+        button_delete = (Button)findViewById(R.id.button_delete);
+        button_delete.setOnClickListener(this);
+
+        OAuthManager.newInstance(MainActivity.this).setoAuthInterface(this);
+
         getHashKey();
-
-        requestAccessTokenInfo();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data)) {
-            return;
-        }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Session.getCurrentSession().removeCallback(callback);
+        OAuthManager.getsInstance().removeSession();
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(OAuthManager.getsInstance().responseOnActivityResult(requestCode,resultCode,data)){
+            return;
+        }else{
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
 
 
     @Override
@@ -66,100 +63,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         switch (view.getId()){
             case R.id.button_login:
-                kakaoLogin();
-
+                OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_KAKAO);
                 break;
             case R.id.button_lougot:
-                kakaoLogOut();
-//                kakaoDelete();
+                OAuthManager.getsInstance().requestSNSLogOut(SNSAuthType.SNS_KAKAO);
                 break;
+            case R.id.button_delete:
+                OAuthManager.getsInstance().requestSNSDelete(SNSAuthType.SNS_KAKAO);
+                break;
+
             default:
                 break;
         }
-    }
-
-
-    /**
-     * kakao Login
-     */
-    public void kakaoLogin(){
-        callback = new SessionCallback();
-        Session.getCurrentSession().addCallback(callback);
-        Session.getCurrentSession().checkAndImplicitOpen();
-
-        // 우선권 부여 : AuthType.KAKAO_TALK
-        // kakao talk 미 설치시 KAKAO_ACCOUNT로 연경
-        Session.getCurrentSession().open(AuthType.KAKAO_LOGIN_ALL,MainActivity.this);
-    }
-
-
-    /**
-     * kakao LogOut
-     */
-    public void kakaoLogOut(){
-
-        UserManagement.getInstance().requestLogout(new LogoutResponseCallback() {
-            @Override
-            public void onCompleteLogout() {
-                // 로그아웃을 성공한 경우 불립니다. 서버에 로그아웃 도달과 무관하게 항상 성공
-                Log.d("OAuth KAKAO","requestLogout onCompleteLogout");
-            }
-        });
-    }
-
-
-    /*
-    ** kakao 연동 해제
-     */
-    public void kakaoDelete(){
-        final String appendMessage = getString(R.string.com_kakao_confirm_unlink);
-        new AlertDialog.Builder(this)
-                .setMessage(appendMessage)
-                .setPositiveButton(getString(R.string.com_kakao_ok_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                UserManagement.getInstance().requestUnlink(new UnLinkResponseCallback() {
-                                    @Override
-                                    public void onFailure(ErrorResult errorResult) {
-                                        Log.d("OAuth KAKAO",errorResult.toString());
-                                    }
-
-                                    @Override
-                                    public void onSessionClosed(ErrorResult errorResult) {
-                                        Log.d("OAuth KAKAO",errorResult.toString());
-                                    }
-
-                                    @Override
-                                    public void onNotSignedUp() {
-                                        Log.d("OAuth KAKAO","onNotSignedUp");
-                                    }
-
-                                    @Override
-                                    public void onSuccess(Long userId) {
-                                        Log.d("OAuth KAKAO","onSuccess");
-                                    }
-                                });
-                                dialog.dismiss();
-                            }
-                        })
-                .setNegativeButton(getString(R.string.com_kakao_cancel_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).show();
-    }
-
-
-    /*
-     ** kakao 토근 정보 얻기
-     */
-    private void requestAccessTokenInfo() {
-        String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken().toString();
-        String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken().toString();
-        Log.d("OAuth KAKAO", "onAccessTokenReceived =\naccToken = "+accToken+"\nrefreshToken = "+refreshToken);
     }
 
 
@@ -178,6 +93,42 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
+        }
+    }
+
+
+
+    /**
+     * 로그인 시도 결과 인터페이스
+     * @param snsName : 로그인 시도한 연동사
+     * @param result : 결과 (true : 연결 성공, false : 실패)
+     * @param token : 해당 연동사 로그인 토큰
+     */
+    @Override
+    public void responseLoginResult(SNSAuthType snsName, Boolean result, String token, String error) {
+
+        String mSNSName = "";
+        switch (snsName){
+            case SNS_KAKAO:
+                mSNSName = "SNS_KAKAO";
+                break;
+            case SNS_NAVER:
+                mSNSName = "SNS_NAVER";
+                break;
+            case SNS_FACEBOOK:
+                mSNSName = "SNS_FACEBOOK";
+                break;
+            case SNS_GOOGLE:
+                mSNSName = "SNS_GOOGLE";
+                break;
+            default:
+                break;
+        }
+
+        if(result){
+            Log.d("OAuth","LOGIN SUCCESS \nSNS NAME ="+mSNSName+"\nTOKEN = "+token);
+        }else{
+            Log.d("OAuth","LOGIN FALE \nSNS NAME ="+mSNSName+"\nERROR = "+error);
         }
     }
 
