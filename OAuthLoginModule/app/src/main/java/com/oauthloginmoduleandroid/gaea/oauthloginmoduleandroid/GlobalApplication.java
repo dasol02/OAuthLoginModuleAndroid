@@ -1,9 +1,10 @@
-package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthKakao;
+package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid;
 
 import android.app.Activity;
 import android.app.Application;
 
 import com.kakao.auth.KakaoSDK;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.KakaoSDKAdapter;
 
 public class GlobalApplication extends Application {
 
@@ -25,7 +26,6 @@ public class GlobalApplication extends Application {
         return currentActivity;
     }
 
-    // Activity가 올라올때마다 Activity의 onCreate에서 호출해줘야한다.
     public static void setCurrentActivity(Activity currentActivity) {
         GlobalApplication.currentActivity = currentActivity;
     }
