@@ -3,6 +3,7 @@ package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kaka
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.kakao.auth.AuthType;
@@ -69,6 +70,7 @@ public class OAuthKakaoManager{
             @Override
             public void onCompleteLogout() {
                 // 로그아웃을 성공한 경우 불립니다. 서버에 로그아웃 도달과 무관하게 항상 성공
+                oAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_KAKAO,true);
                 Log.d("OAuth KAKAO","requestLogout onCompleteLogout");
             }
         });
@@ -76,14 +78,39 @@ public class OAuthKakaoManager{
 
 
     /*
+     ** kakao 로그인 유무 확인
+     */
+    public Boolean requestLoginInfo() {
+        String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken();
+        String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken();
+
+        Log.d("OAuth KAKAO", "onAccessTokenReceived =\naccToken = "+accToken+"\nrefreshToken = "+refreshToken);
+
+
+        if(!TextUtils.isEmpty(accToken) && !TextUtils.isEmpty(refreshToken)){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+
+    /*
      ** kakao 토근 정보 얻기
      */
     public String requestAccessTokenInfo() {
-        String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken().toString();
-        String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken().toString();
-        Log.d("OAuth KAKAO", "onAccessTokenReceived =\naccToken = "+accToken+"\nrefreshToken = "+refreshToken);
+        String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken();
+        String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken();
 
-        return "onAccessTokenReceived =\naccToken = "+accToken+"\nrefreshToken = "+refreshToken;
+        if(TextUtils.isEmpty(accToken)){
+            accToken = "NUll";
+        }
+
+        if(TextUtils.isEmpty(refreshToken)){
+            refreshToken = "NUll";
+        }
+
+        return "onAccessTokenReceived =\n\naccToken = \n"+accToken+"\n\nrefreshToken = \n"+refreshToken;
     }
 
 
@@ -113,44 +140,44 @@ public class OAuthKakaoManager{
      ** kakao 연동 해제
      */
     public void kakaoDelete(){
-        final String appendMessage = OAuthManager.getmActivity().getString(R.string.com_kakao_confirm_unlink);
-        new AlertDialog.Builder(OAuthManager.getmActivity())
-                .setMessage(appendMessage)
-                .setPositiveButton(OAuthManager.getmActivity().getString(R.string.com_kakao_ok_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                UserManagement.getInstance().requestUnlink(new UnLinkResponseCallback() {
-                                    @Override
-                                    public void onFailure(ErrorResult errorResult) {
-                                        Log.d("OAuth KAKAO",errorResult.toString());
-                                    }
+        UserManagement.getInstance().requestUnlink(new UnLinkResponseCallback() {
+            String error;
 
-                                    @Override
-                                    public void onSessionClosed(ErrorResult errorResult) {
-                                        Log.d("OAuth KAKAO",errorResult.toString());
-                                    }
+            @Override
+            public void onFailure(ErrorResult errorResult) {
+                if(TextUtils.isEmpty(errorResult.toString())){
+                    error = "NULL";
+                }else{
+                    error = errorResult.toString();
+                }
+                Log.d("OAuth KAKAO",error);
+                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,false,error);
+            }
 
-                                    @Override
-                                    public void onNotSignedUp() {
-                                        Log.d("OAuth KAKAO","onNotSignedUp");
-                                    }
+            @Override
+            public void onSessionClosed(ErrorResult errorResult) {
+                if(TextUtils.isEmpty(errorResult.toString())){
+                    error = "NULL";
+                }else{
+                    error = errorResult.toString();
+                }
+                Log.d("OAuth KAKAO",error);
+                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,false,error);
+            }
 
-                                    @Override
-                                    public void onSuccess(Long userId) {
-                                        Log.d("OAuth KAKAO","onSuccess");
-                                    }
-                                });
-                                dialog.dismiss();
-                            }
-                        })
-                .setNegativeButton(OAuthManager.getmActivity().getString(R.string.com_kakao_cancel_button),
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        }).show();
+            @Override
+            public void onNotSignedUp() {
+                Log.d("OAuth KAKAO","onNotSignedUp");
+                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,true,null);
+            }
+
+            @Override
+            public void onSuccess(Long userId) {
+                Log.d("OAuth KAKAO","onSuccess");
+                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,true,null);
+            }
+        });
+
     }
 
 
@@ -164,10 +191,17 @@ public class OAuthKakaoManager{
         keys.add("kakao_account.email");
 
         UserManagement.getInstance().me(keys,new MeV2ResponseCallback() {
+            String error;
 
             @Override
             public void onFailure(ErrorResult errorResult) {
-                Log.e("OAuth KAKAO", "onFailure error message=" + errorResult);
+                if(TextUtils.isEmpty(errorResult.toString())){
+                    error = "NULL";
+                }else{
+                    error = errorResult.toString();
+                }
+                Log.e("OAuth KAKAO", "onFailure error message=" + error);
+                oAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,false,"사용자 정보 호출 실패",error);
                 super.onFailure(errorResult);
             }
 
@@ -175,12 +209,25 @@ public class OAuthKakaoManager{
             @Override
             public void onSessionClosed(ErrorResult errorResult) {
                 //세션이 닫혀 실패한 경우로 에러 결과를 받습니다. 재로그인 / 토큰발급이 필요합니다.
-                Log.e("OAuth KAKAO", "onSessionClosed error message=" + errorResult);
+                if(TextUtils.isEmpty(errorResult.toString())){
+                    error = "NULL";
+                }else{
+                    error = errorResult.toString();
+                }
+                Log.e("OAuth KAKAO", "onFailure error message=" + error);
+                oAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,false,"재로그인이 필요 합니다.(토큰 만료)",error);
 
             }
 
             @Override
             public void onSuccess(MeV2Response result) {
+                String userdata = "";
+                userdata = userdata+"\n "+"id = "+String.valueOf(result.getId());
+                userdata = userdata+"\n "+"email = "+result.getKakaoAccount().getEmail();
+                userdata = userdata+"\n\n"+requestAccessTokenInfo();
+
+                oAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,true,userdata,null);
+
                 Log.d("OAuth KAKAO", result.toString());
                 Log.d("OAuth KAKAO id = ", result.getId() + "");
                 Log.d("OAuth KAKAO email = ", result.getKakaoAccount().getEmail());
@@ -201,7 +248,6 @@ public class OAuthKakaoManager{
         @Override
         public void onSessionOpened() {
             Log.e("OAuth KAKAO", "Login onSessionOpened");
-//            requestUserInfo(); // 개인정보 호출
             String token = requestAccessTokenInfo();
             oAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_KAKAO,true,token,null);
         }

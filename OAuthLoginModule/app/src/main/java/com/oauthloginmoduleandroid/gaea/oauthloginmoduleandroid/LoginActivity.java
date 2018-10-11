@@ -5,7 +5,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
 import android.util.Log;
@@ -13,31 +12,34 @@ import android.view.View;
 import android.widget.Button;
 
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManagerInterface;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthLoginInterface;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener, OAuthManagerInterface {
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener, OAuthLoginInterface {
 
-    Button button_lougot,button_login,button_delete;
+    Button button_login_kakao,button_login_naver,button_login_google,button_login_facebook;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        button_lougot = (Button)findViewById(R.id.button_lougot);
-        button_lougot.setOnClickListener(this);
+        button_login_kakao = (Button)findViewById(R.id.button_login_kakao);
+        button_login_naver = (Button)findViewById(R.id.button_login_naver);
+        button_login_google = (Button)findViewById(R.id.button_login_google);
+        button_login_facebook = (Button)findViewById(R.id.button_login_facebook);
 
-        button_login = (Button)findViewById(R.id.button_login);
-        button_login.setOnClickListener(this);
+        button_login_kakao.setOnClickListener(this);
+        button_login_naver.setOnClickListener(this);
+        button_login_google.setOnClickListener(this);
+        button_login_facebook.setOnClickListener(this);
 
-        button_delete = (Button)findViewById(R.id.button_delete);
-        button_delete.setOnClickListener(this);
 
-        OAuthManager.newInstance(LoginActivity.this).setoAuthInterface(this);
+        OAuthManager.getsInstance().setCallBackActivity(LoginActivity.this);
+        OAuthManager.getsInstance().setoAuthLoginInterface(this);
 
         getHashKey();
     }
@@ -64,16 +66,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View view) {
 
         switch (view.getId()){
-            case R.id.button_login:
+            case R.id.button_login_kakao:
                 OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_KAKAO);
                 break;
-            case R.id.button_lougot:
-                OAuthManager.getsInstance().requestSNSLogOut(SNSAuthType.SNS_KAKAO);
+            case R.id.button_login_naver:
                 break;
-            case R.id.button_delete:
-                OAuthManager.getsInstance().requestSNSDelete(SNSAuthType.SNS_KAKAO);
+            case R.id.button_login_facebook:
                 break;
-
+            case R.id.button_login_google:
+                break;
             default:
                 break;
         }

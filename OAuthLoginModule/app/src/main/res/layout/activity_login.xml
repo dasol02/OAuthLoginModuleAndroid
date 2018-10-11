@@ -10,32 +10,46 @@
     <LinearLayout
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <Button
-            android:layout_weight="1"
-            android:layout_below="@id/button_login"
-            android:id="@+id/button_delete"
-            android:text="DELETE"
-            android:layout_width="0dp"
-            android:layout_height="60dp" />
 
         <Button
+            android:layout_marginBottom="20dp"
+            android:background="#ffef3f"
             android:layout_weight="1"
-            android:layout_below="@id/button_login"
-            android:id="@+id/button_lougot"
-            android:text="LOGOUT"
-            android:layout_width="0dp"
-            android:layout_height="60dp" />
-
-        <Button
-            android:layout_weight="1"
-            android:text="LOGIN"
-            android:id="@+id/button_login"
-            android:layout_width="0dp"
-            android:layout_height="60dp"
+            android:text="KAKAO LOGIN"
+            android:id="@+id/button_login_kakao"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
             android:layout_gravity="center_horizontal"/>
+
+        <Button
+            android:layout_marginBottom="20dp"
+            android:background="#55cf21"
+            android:layout_weight="1"
+            android:id="@+id/button_login_naver"
+            android:text="NAVER"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+
+        <Button
+            android:layout_marginBottom="20dp"
+            android:background="#c26042"
+            android:layout_weight="1"
+            android:id="@+id/button_login_google"
+            android:text="GOOGLE"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <Button
+            android:background="#16aaff"
+            android:layout_weight="1"
+            android:id="@+id/button_login_facebook"
+            android:text="FACEBOOK"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
 
     </LinearLayout>
 

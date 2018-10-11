@@ -2,6 +2,7 @@ package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.util.Log;
 
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.OAuthKakaoManager;
 
@@ -9,28 +10,28 @@ public class OAuthManager implements OAuthCovenantInterface{
 
     private static OAuthManager sInstance;
     private static Activity mActivity;
-    private static OAuthManagerInterface oAuthManagerInterface;
+    private static OAuthLoginInterface oAuthLoginInterface;
+    private static OAuthLogoutInterface oAuthLogoutInterface;
+    private static OAuthUserFrofileInterface oAuthUserFrofileInterface;
+
     private OAuthKakaoManager oAuthKakaoManager;
 
-    public OAuthManager(Activity mainActivity) {
-        this.mActivity = mainActivity;
-
+    public OAuthManager() {
         // kakao 생성
         oAuthKakaoManager = OAuthKakaoManager.getInstance();
         oAuthKakaoManager.setoAuthCovenantInterface(this);
     }
 
-
-    public static OAuthManager getsInstance() {
-        return sInstance;
+    public void setCallBackActivity(Activity mainActivity) {
+        this.mActivity = mainActivity;
     }
 
 
-    public static OAuthManager newInstance(Activity mainActivity) {
+    public static OAuthManager getsInstance() {
         if (sInstance == null) {
             synchronized (OAuthManager.class) {
                 if (sInstance == null) {
-                    sInstance = new OAuthManager(mainActivity);
+                    sInstance = new OAuthManager();
                 }
             }
         }
@@ -39,12 +40,30 @@ public class OAuthManager implements OAuthCovenantInterface{
 
 
     /**
-     * 인터페이스 추가 (추후 로그인, 로그아웃 등 데이터 전달)
-     * @param oAuthManagerInterface
+     * 인터페이스 추가 (로그인)
+     * @param oAuthLoginInterface
      */
-    public void setoAuthInterface(OAuthManagerInterface oAuthManagerInterface){
-        this.oAuthManagerInterface = oAuthManagerInterface;
+    public void setoAuthLoginInterface(OAuthLoginInterface oAuthLoginInterface){
+        this.oAuthLoginInterface = oAuthLoginInterface;
     }
+
+
+    /**
+     * 인터페이스 추가 (로그아웃)
+     * @param oAuthLogoutInterface
+     */
+    public void setoAuthLogoutInterface(OAuthLogoutInterface oAuthLogoutInterface){
+        this.oAuthLogoutInterface = oAuthLogoutInterface;
+    }
+
+    /**
+     * 인터페이스 추가 (사용자 정보)
+     * @param oAuthUserFrofileInterface
+     */
+    public void setoAuthUserFrofileInterface(OAuthUserFrofileInterface oAuthUserFrofileInterface){
+        this.oAuthUserFrofileInterface = oAuthUserFrofileInterface;
+    }
+
 
     /**
      * 메인 엑티비티 전달
@@ -60,6 +79,20 @@ public class OAuthManager implements OAuthCovenantInterface{
      */
     public void removeSession(){
         oAuthKakaoManager.removeKakaoSession();
+    }
+
+
+    /**
+     * 로그인 여부
+     */
+    public Boolean getLoginState() {
+
+        if(oAuthKakaoManager.requestLoginInfo()){
+            Log.d("OAuth Manger","Login State info Success \nSNS NAME = KAKAO");
+            return true;
+        }else{
+            return false;
+        }
     }
 
 
@@ -86,42 +119,24 @@ public class OAuthManager implements OAuthCovenantInterface{
 
     /**
      * 로그 아웃
-     * @param snsName : 연동사 이름 변수
      */
-    public void requestSNSLogOut(SNSAuthType snsName){
-        switch (snsName){
-            case SNS_KAKAO:
-                oAuthKakaoManager.kakaoLogOut();
-                break;
-            case SNS_NAVER:
-                break;
-            case SNS_FACEBOOK:
-                break;
-            case SNS_GOOGLE:
-                break;
-            default:
-                break;
+    public void requestSNSLogOut(){
+        if(oAuthKakaoManager.requestLoginInfo()){
+            oAuthKakaoManager.kakaoLogOut();
+        }else{
+            oAuthLogoutInterface.responseLogoutResult(null,false);
         }
     }
 
 
     /**
      * 연동사 해제
-     * @param snsName : 연동사 이름 변수
      */
-    public void requestSNSDelete(SNSAuthType snsName){
-        switch (snsName){
-            case SNS_KAKAO:
-                oAuthKakaoManager.kakaoDelete();
-                break;
-            case SNS_NAVER:
-                break;
-            case SNS_FACEBOOK:
-                break;
-            case SNS_GOOGLE:
-                break;
-            default:
-                break;
+    public void requestSNSDelete(){
+        if(oAuthKakaoManager.requestLoginInfo()){
+            oAuthKakaoManager.kakaoDelete();
+        }else{
+            oAuthLogoutInterface.responseDeleteResult(null,false,"로그인 접속 정보 조회 오류");
         }
     }
 
@@ -139,6 +154,20 @@ public class OAuthManager implements OAuthCovenantInterface{
     }
 
 
+    /**
+     * 사용자 정보 호출
+     */
+    public void responseUserFrofileInfo(){
+        if(oAuthKakaoManager.requestLoginInfo()){
+            oAuthKakaoManager.requestUserInfo();
+        }else{
+            oAuthUserFrofileInterface.responseUserFrofileInfoResult(null,false,"로그인 접속 오류",null);
+        }
+    }
+
+
+
+    // InterFace Override
 
     /**
      * 로그인 시도 결과 인터페이스 전달
@@ -146,10 +175,23 @@ public class OAuthManager implements OAuthCovenantInterface{
      * @param result : 결과 (true : 연결 성공, false : 실패)
      * @param token : 해당 연동사 로그인 토큰
      */
-    @Override
+    @Override // 로그인 결과
     public void responseCovenantLoginResult(SNSAuthType snsName, Boolean result, String token, String error) {
-        // 로그인 화면으로 전달
-        oAuthManagerInterface.responseLoginResult(snsName,result,token,error);
+        oAuthLoginInterface.responseLoginResult(snsName,result,token,error);
     }
 
+    @Override // 로그아웃 결과
+    public void responseLogoutResult(SNSAuthType snsName, Boolean result) {
+        oAuthLogoutInterface.responseLogoutResult(snsName,result);
+    }
+
+    @Override // 연동해제 결과
+    public void responseDeleteResult(SNSAuthType snsName, Boolean result, String error) {
+        oAuthLogoutInterface.responseDeleteResult(snsName, result, error);
+    }
+
+    @Override // 사용자 정보 요청 결과
+    public void responseUserFrofileInfoResult(SNSAuthType snsName, Boolean result, String userinfo, String error) {
+        oAuthUserFrofileInterface.responseUserFrofileInfoResult(snsName, result, userinfo, error);
+    }
 }
