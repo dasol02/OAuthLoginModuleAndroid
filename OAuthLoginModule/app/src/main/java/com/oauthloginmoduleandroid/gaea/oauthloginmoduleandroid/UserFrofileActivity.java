@@ -97,20 +97,32 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
             finish();
         }else{
             Log.d("OAuth","LOGOUT FALE \nSNS NAME ="+getSNSname(snsName));
-            Toast.makeText(getApplicationContext(),"로그아웃 실패",Toast.LENGTH_SHORT).show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),"로그아웃 실패",Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
 
 
     @Override
-    public void responseDeleteResult(SNSAuthType snsName, Boolean result, String error) {
+    public void responseDeleteResult(final SNSAuthType snsName, Boolean result, final String error) {
 
         if(result){
             Log.d("OAuth","DELETE SUCCESS \nSNS NAME ="+getSNSname(snsName));
             finish();
         }else{
             Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(snsName)+"\nERROR ="+error);
-            Toast.makeText(getApplicationContext(),"연동해제 실패 : "+error,Toast.LENGTH_SHORT).show();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(),"연동해제 실패 : "+error,Toast.LENGTH_SHORT).show();
+                }
+            });
+
+
         }
     }
 

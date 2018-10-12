@@ -1,27 +1,17 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Naver;
 
-import android.app.Activity;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.nhn.android.naverlogin.OAuthLogin;
 import com.nhn.android.naverlogin.OAuthLoginHandler;
 import com.nhn.android.naverlogin.data.OAuthLoginState;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthCovenantClass;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthCovenantInterface;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
 
 
 public class OAuthNaverManager extends OAuthCovenantClass {
-
-    /**
-     * client 정보
-     */
-    private static String OAUTH_CLIENT_ID = "DMM9F1vOnLoTdfm8Qx6w";
-    private static String OAUTH_CLIENT_SECRET = "5_uvXsmbPj";
-    private static String OAUTH_CLIENT_NAME = "loginmoduleapp";
 
     private static final String TAG = "OAuth Naver";
 
@@ -95,6 +85,7 @@ public class OAuthNaverManager extends OAuthCovenantClass {
     }
 
 
+
     /**
      * 네이버 연동 해제
      */
@@ -113,7 +104,7 @@ public class OAuthNaverManager extends OAuthCovenantClass {
                     mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_NAVER,true,null);
                 }else{
                     Log.d(TAG, "naverDelete SUCCESS");
-                    mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_NAVER,false,null);
+                    mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_NAVER,true,null);
                 }
 
             }
@@ -166,6 +157,10 @@ public class OAuthNaverManager extends OAuthCovenantClass {
     }
 
 
+    /**
+     * 네이버 저장되어 있는 토큰 정보 호출
+     * @return
+     */
     public String getrequestToken(){
         String accessToken = mOAuthLoginInstance.getAccessToken(mContext);
         String refreshToken = mOAuthLoginInstance.getRefreshToken(mContext);
