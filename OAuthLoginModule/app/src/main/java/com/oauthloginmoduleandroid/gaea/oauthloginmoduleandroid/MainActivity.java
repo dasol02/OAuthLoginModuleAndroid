@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void uiUpdate(){
         if(oAuthManager == null){
             oAuthManager = OAuthManager.getsInstance();
+            oAuthManager.setCallBackActivity(MainActivity.this);
         }
         Boolean loginStateSuccess = oAuthManager.getLoginState();
         button_user_frofile.setVisibility(loginStateSuccess ? View.VISIBLE : View.GONE); // 유저 정보 버튼

@@ -70,6 +70,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_KAKAO);
                 break;
             case R.id.button_login_naver:
+                OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_NAVER);
                 break;
             case R.id.button_login_facebook:
                 break;
@@ -90,7 +91,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             for (Signature signature : info.signatures) {
                 MessageDigest md = MessageDigest.getInstance("SHA");
                 md.update(signature.toByteArray());
-                Log.d("OAuth KAKAO","key_hash="+ Base64.encodeToString(md.digest(), Base64.DEFAULT));
+                Log.d("OAuth Login Activity","key_hash="+ Base64.encodeToString(md.digest(), Base64.DEFAULT));
             }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();

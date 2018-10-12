@@ -20,7 +20,7 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAu
 public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener, OAuthLogoutInterface, OAuthUserFrofileInterface {
 
     Button button_lougot,button_delete;
-    TextView text_user_frofile;
+    TextView text_title_user_frofile,text_user_frofile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,6 +33,7 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         button_delete = (Button)findViewById(R.id.button_delete);
         button_delete.setOnClickListener(this);
 
+        text_title_user_frofile = (TextView)findViewById(R.id.text_title_user_frofile);
         text_user_frofile = (TextView)findViewById(R.id.text_user_frofile);
 
         OAuthManager.getsInstance().setoAuthUserFrofileInterface(UserFrofileActivity.this);
@@ -89,29 +90,13 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void responseLogoutResult(SNSAuthType snsName, Boolean result) {
-        String mSNSName = "";
-        switch (snsName){
-            case SNS_KAKAO:
-                mSNSName = "SNS_KAKAO";
-                break;
-            case SNS_NAVER:
-                mSNSName = "SNS_NAVER";
-                break;
-            case SNS_FACEBOOK:
-                mSNSName = "SNS_FACEBOOK";
-                break;
-            case SNS_GOOGLE:
-                mSNSName = "SNS_GOOGLE";
-                break;
-            default:
-                break;
-        }
+
 
         if(result){
-            Log.d("OAuth","LOGOUT SUCCESS \nSNS NAME ="+mSNSName);
+            Log.d("OAuth","LOGOUT SUCCESS \nSNS NAME ="+getSNSname(snsName));
             finish();
         }else{
-            Log.d("OAuth","LOGOUT FALE \nSNS NAME ="+mSNSName);
+            Log.d("OAuth","LOGOUT FALE \nSNS NAME ="+getSNSname(snsName));
             Toast.makeText(getApplicationContext(),"로그아웃 실패",Toast.LENGTH_SHORT).show();
         }
     }
@@ -119,58 +104,32 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void responseDeleteResult(SNSAuthType snsName, Boolean result, String error) {
-        String mSNSName = "";
-        switch (snsName){
-            case SNS_KAKAO:
-                mSNSName = "SNS_KAKAO";
-                break;
-            case SNS_NAVER:
-                mSNSName = "SNS_NAVER";
-                break;
-            case SNS_FACEBOOK:
-                mSNSName = "SNS_FACEBOOK";
-                break;
-            case SNS_GOOGLE:
-                mSNSName = "SNS_GOOGLE";
-                break;
-            default:
-                break;
-        }
 
         if(result){
-            Log.d("OAuth","DELETE SUCCESS \nSNS NAME ="+mSNSName);
+            Log.d("OAuth","DELETE SUCCESS \nSNS NAME ="+getSNSname(snsName));
             finish();
         }else{
-            Log.d("OAuth","DELETE FALE \nSNS NAME ="+mSNSName+"\nERROR ="+error);
+            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(snsName)+"\nERROR ="+error);
             Toast.makeText(getApplicationContext(),"연동해제 실패 : "+error,Toast.LENGTH_SHORT).show();
         }
     }
 
 
     @Override
-    public void responseUserFrofileInfoResult(SNSAuthType snsName, Boolean result, String userinfo, String error) {
-        String mSNSName = "";
-        switch (snsName){
-            case SNS_KAKAO:
-                mSNSName = "SNS_KAKAO";
-                break;
-            case SNS_NAVER:
-                mSNSName = "SNS_NAVER";
-                break;
-            case SNS_FACEBOOK:
-                mSNSName = "SNS_FACEBOOK";
-                break;
-            case SNS_GOOGLE:
-                mSNSName = "SNS_GOOGLE";
-                break;
-            default:
-                break;
-        }
+    public void responseUserFrofileInfoResult(final SNSAuthType snsName, Boolean result, final String userinfo, String error) {
+
 
         if(result){
-            text_user_frofile.setText(userinfo);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    text_title_user_frofile.setText(getSNSname(snsName));
+                    text_user_frofile.setText(userinfo);
+                }
+            });
+
         }else{
-            Log.d("OAuth","DELETE FALE \nSNS NAME ="+mSNSName+"\nERROR ="+error);
+            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(snsName)+"\nERROR ="+error);
             Toast.makeText(getApplicationContext(),"정보 조회 실패 : "+userinfo,Toast.LENGTH_SHORT).show();
         }
     }
@@ -184,5 +143,28 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
                 .setNegativeButton("취소", OnCancelListener).show();
     }
 
+
+
+    public String getSNSname(SNSAuthType snsAuthType){
+        String mSNSName = "";
+        switch (snsAuthType){
+            case SNS_KAKAO:
+                mSNSName = "SNS_KAKAO";
+                break;
+            case SNS_NAVER:
+                mSNSName = "SNS_NAVER";
+                break;
+            case SNS_FACEBOOK:
+                mSNSName = "SNS_FACEBOOK";
+                break;
+            case SNS_GOOGLE:
+                mSNSName = "SNS_GOOGLE";
+                break;
+            default:
+                break;
+        }
+
+        return mSNSName;
+    }
 
 }

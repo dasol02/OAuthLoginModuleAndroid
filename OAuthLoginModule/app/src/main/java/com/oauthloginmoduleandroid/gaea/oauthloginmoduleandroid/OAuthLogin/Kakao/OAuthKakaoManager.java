@@ -1,5 +1,6 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +17,7 @@ import com.kakao.usermgmt.callback.MeV2ResponseCallback;
 import com.kakao.usermgmt.callback.UnLinkResponseCallback;
 import com.kakao.usermgmt.response.MeV2Response;
 import com.kakao.util.exception.KakaoException;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthCovenantClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthCovenantInterface;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
@@ -24,11 +26,10 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.R;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OAuthKakaoManager{
+public class OAuthKakaoManager extends OAuthCovenantClass{
 
     SessionCallback callback;
     private static OAuthKakaoManager sInstance;
-    private static OAuthCovenantInterface oAuthCovenantInterface;
 
     public static OAuthKakaoManager getInstance() {
         if (sInstance == null) {
@@ -42,11 +43,6 @@ public class OAuthKakaoManager{
     }
 
 
-    public void setoAuthCovenantInterface(OAuthCovenantInterface oAuthCovenantInterface) {
-        OAuthKakaoManager.oAuthCovenantInterface = oAuthCovenantInterface;
-    }
-
-
     /**
      * kakao Login
      */
@@ -57,7 +53,7 @@ public class OAuthKakaoManager{
 
         // 우선권 부여 : AuthType.KAKAO_TALK
         // kakao talk 미 설치시 KAKAO_ACCOUNT로 연경
-        Session.getCurrentSession().open(AuthType.KAKAO_LOGIN_ALL,OAuthManager.getmActivity());
+        Session.getCurrentSession().open(AuthType.KAKAO_LOGIN_ALL,mContext);
     }
 
 
@@ -70,7 +66,7 @@ public class OAuthKakaoManager{
             @Override
             public void onCompleteLogout() {
                 // 로그아웃을 성공한 경우 불립니다. 서버에 로그아웃 도달과 무관하게 항상 성공
-                oAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_KAKAO,true);
+                mOAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_KAKAO,true);
                 Log.d("OAuth KAKAO","requestLogout onCompleteLogout");
             }
         });
@@ -151,7 +147,7 @@ public class OAuthKakaoManager{
                     error = errorResult.toString();
                 }
                 Log.d("OAuth KAKAO",error);
-                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,false,error);
+                mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,false,error);
             }
 
             @Override
@@ -162,19 +158,19 @@ public class OAuthKakaoManager{
                     error = errorResult.toString();
                 }
                 Log.d("OAuth KAKAO",error);
-                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,false,error);
+                mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,false,error);
             }
 
             @Override
             public void onNotSignedUp() {
                 Log.d("OAuth KAKAO","onNotSignedUp");
-                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,true,null);
+                mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,true,null);
             }
 
             @Override
             public void onSuccess(Long userId) {
                 Log.d("OAuth KAKAO","onSuccess");
-                oAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,true,null);
+                mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_KAKAO,true,null);
             }
         });
 
@@ -201,7 +197,7 @@ public class OAuthKakaoManager{
                     error = errorResult.toString();
                 }
                 Log.e("OAuth KAKAO", "onFailure error message=" + error);
-                oAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,false,"사용자 정보 호출 실패",error);
+                mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,false,"사용자 정보 호출 실패",error);
                 super.onFailure(errorResult);
             }
 
@@ -215,7 +211,7 @@ public class OAuthKakaoManager{
                     error = errorResult.toString();
                 }
                 Log.e("OAuth KAKAO", "onFailure error message=" + error);
-                oAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,false,"재로그인이 필요 합니다.(토큰 만료)",error);
+                mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,false,"재로그인이 필요 합니다.(토큰 만료)",error);
 
             }
 
@@ -226,7 +222,7 @@ public class OAuthKakaoManager{
                 userdata = userdata+"\n "+"email = "+result.getKakaoAccount().getEmail();
                 userdata = userdata+"\n\n"+requestAccessTokenInfo();
 
-                oAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,true,userdata,null);
+                mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_KAKAO,true,userdata,null);
 
                 Log.d("OAuth KAKAO", result.toString());
                 Log.d("OAuth KAKAO id = ", result.getId() + "");
@@ -249,7 +245,7 @@ public class OAuthKakaoManager{
         public void onSessionOpened() {
             Log.e("OAuth KAKAO", "Login onSessionOpened");
             String token = requestAccessTokenInfo();
-            oAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_KAKAO,true,token,null);
+            mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_KAKAO,true,token,null);
         }
 
 
@@ -257,7 +253,7 @@ public class OAuthKakaoManager{
         @Override
         public void onSessionOpenFailed(KakaoException exception) {
             Log.e("OAuth KAKAO", "Login onSessionOpenFailed");
-            oAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_KAKAO,false,null,exception.toString());
+            mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_KAKAO,false,null,exception.toString());
         }
 
     }

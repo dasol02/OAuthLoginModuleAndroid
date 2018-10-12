@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.util.Log;
 
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.OAuthKakaoManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Naver.OAuthNaverManager;
 
 public class OAuthManager implements OAuthCovenantInterface{
 
@@ -15,15 +16,23 @@ public class OAuthManager implements OAuthCovenantInterface{
     private static OAuthUserFrofileInterface oAuthUserFrofileInterface;
 
     private OAuthKakaoManager oAuthKakaoManager;
+    private OAuthNaverManager oAuthNaverManager;
 
     public OAuthManager() {
         // kakao 생성
         oAuthKakaoManager = OAuthKakaoManager.getInstance();
         oAuthKakaoManager.setoAuthCovenantInterface(this);
+
+        // naver 생성
+        oAuthNaverManager = OAuthNaverManager.getInstance();
+        oAuthNaverManager.setoAuthCovenantInterface(this);
     }
 
     public void setCallBackActivity(Activity mainActivity) {
         this.mActivity = mainActivity;
+        oAuthKakaoManager.setoAuthCovenantContext(mActivity);
+        oAuthNaverManager.setoAuthCovenantContext(mActivity);
+        oAuthNaverManager.setNaverOAuthSetting();
     }
 
 
@@ -66,15 +75,6 @@ public class OAuthManager implements OAuthCovenantInterface{
 
 
     /**
-     * 메인 엑티비티 전달
-     * @return : onActivityResult 전달 받을 액티비티
-     */
-    public static Activity getmActivity() {
-        return mActivity;
-    }
-
-
-    /**
      * 앱 종료시 연결되어 있던 시즌 제거
      */
     public void removeSession(){
@@ -89,6 +89,9 @@ public class OAuthManager implements OAuthCovenantInterface{
 
         if(oAuthKakaoManager.requestLoginInfo()){
             Log.d("OAuth Manger","Login State info Success \nSNS NAME = KAKAO");
+            return true;
+        }else if(oAuthNaverManager.requestLoginInfo()){
+            Log.d("OAuth Manger","Login State info Success \nSNS NAME = NAVER");
             return true;
         }else{
             return false;
@@ -106,6 +109,7 @@ public class OAuthManager implements OAuthCovenantInterface{
                 oAuthKakaoManager.kakaoLogin();
                 break;
             case SNS_NAVER:
+                oAuthNaverManager.naverLogin();
                 break;
             case SNS_FACEBOOK:
                 break;
@@ -123,6 +127,8 @@ public class OAuthManager implements OAuthCovenantInterface{
     public void requestSNSLogOut(){
         if(oAuthKakaoManager.requestLoginInfo()){
             oAuthKakaoManager.kakaoLogOut();
+        }else if(oAuthNaverManager.requestLoginInfo()){
+            oAuthNaverManager.naverLogout();
         }else{
             oAuthLogoutInterface.responseLogoutResult(null,false);
         }
@@ -135,6 +141,8 @@ public class OAuthManager implements OAuthCovenantInterface{
     public void requestSNSDelete(){
         if(oAuthKakaoManager.requestLoginInfo()){
             oAuthKakaoManager.kakaoDelete();
+        }else if(oAuthNaverManager.requestLoginInfo()){
+            oAuthNaverManager.naverDelete();
         }else{
             oAuthLogoutInterface.responseDeleteResult(null,false,"로그인 접속 정보 조회 오류");
         }
@@ -151,6 +159,8 @@ public class OAuthManager implements OAuthCovenantInterface{
         }else{
             return false;
         }
+
+        // naver 콜백 없음
     }
 
 
@@ -158,8 +168,10 @@ public class OAuthManager implements OAuthCovenantInterface{
      * 사용자 정보 호출
      */
     public void responseUserFrofileInfo(){
-        if(oAuthKakaoManager.requestLoginInfo()){
+        if(oAuthKakaoManager.requestLoginInfo()) {
             oAuthKakaoManager.requestUserInfo();
+        }else if(oAuthNaverManager.requestLoginInfo()){
+            oAuthNaverManager.requestUserInfo();
         }else{
             oAuthUserFrofileInterface.responseUserFrofileInfoResult(null,false,"로그인 접속 오류",null);
         }
