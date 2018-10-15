@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">OAuthLoginModuleAndroid</string>
+
+    <!--로그인 모듈 Key-->
+
+    <!--카카오-->
     <string name="kakao_app_key">3518487ea1bd3a639d1fdf1ffea5bd28</string>
+    <!--페이스북-->
+    <string name="facebook_app_id">1750035155124396</string> <string name="fb_login_protocol_scheme">fb1750035155124396</string>
+    <!--구글-->
+    <string name="server_client_id">463686728262-joq7d8o5ddt2lncjcq92cclepr95pikd.apps.googleusercontent.com</string>
+
 </resources>

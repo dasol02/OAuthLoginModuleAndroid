@@ -4,6 +4,14 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Facebook.OAuthFacebookManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Google.OAuthGoogleManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.OAuthKakaoManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Naver.OAuthNaverManager;
 
@@ -17,6 +25,8 @@ public class OAuthManager implements OAuthCovenantInterface{
 
     private OAuthKakaoManager oAuthKakaoManager;
     private OAuthNaverManager oAuthNaverManager;
+    private OAuthFacebookManager oAuthFacebookManager;
+    private OAuthGoogleManager oAuthGoogleManager;
 
     public OAuthManager() {
         // kakao 생성
@@ -26,6 +36,14 @@ public class OAuthManager implements OAuthCovenantInterface{
         // naver 생성
         oAuthNaverManager = OAuthNaverManager.getInstance();
         oAuthNaverManager.setoAuthCovenantInterface(this);
+
+        // 페이스북 생성
+        oAuthFacebookManager = OAuthFacebookManager.getInstance();
+        oAuthFacebookManager.setoAuthCovenantInterface(this);
+
+        // 페이스북 생성
+        oAuthGoogleManager = OAuthGoogleManager.getInstance();
+        oAuthGoogleManager.setoAuthCovenantInterface(this);
     }
 
     public void setCallBackActivity(Activity mainActivity) {
@@ -33,6 +51,12 @@ public class OAuthManager implements OAuthCovenantInterface{
         oAuthKakaoManager.setoAuthCovenantContext(mActivity);
         oAuthNaverManager.setoAuthCovenantContext(mActivity);
         oAuthNaverManager.setNaverOAuthSetting();
+
+        oAuthFacebookManager.setoAuthCovenantContext(mainActivity);
+        oAuthFacebookManager.setFacebookOAuthSetting();
+
+        oAuthGoogleManager.setoAuthCovenantContext(mainActivity);
+        oAuthGoogleManager.setGoogleOAuthSetting();
     }
 
 
@@ -93,6 +117,12 @@ public class OAuthManager implements OAuthCovenantInterface{
         }else if(oAuthNaverManager.requestLoginInfo()){
             Log.d("OAuth Manger","Login State info Success \nSNS NAME = NAVER");
             return true;
+        }else if(oAuthFacebookManager.requestLoginInfo()){
+            Log.d("OAuth Manger","Login State info Success \nSNS NAME = FACEBOOK");
+            return true;
+        }else if(oAuthGoogleManager.requestLoginInfo()){
+            Log.d("OAuth Manger","Login State info Success \nSNS NAME = GOOGLE");
+            return true;
         }else{
             return false;
         }
@@ -103,8 +133,8 @@ public class OAuthManager implements OAuthCovenantInterface{
      * 로그인 시도
      * @param snsName : 연동사 이름 변수
      */
-    public void requestSNSLogin(SNSAuthType snsName){
-        switch (snsName){
+    public void requestSNSLogin(SNSAuthType snsName) {
+        switch (snsName) {
             case SNS_KAKAO:
                 oAuthKakaoManager.kakaoLogin();
                 break;
@@ -112,8 +142,10 @@ public class OAuthManager implements OAuthCovenantInterface{
                 oAuthNaverManager.naverLogin();
                 break;
             case SNS_FACEBOOK:
+                oAuthFacebookManager.facebookLogin();
                 break;
             case SNS_GOOGLE:
+                oAuthGoogleManager.googleLogin();
                 break;
             default:
                 break;
@@ -129,6 +161,10 @@ public class OAuthManager implements OAuthCovenantInterface{
             oAuthKakaoManager.kakaoLogOut();
         }else if(oAuthNaverManager.requestLoginInfo()){
             oAuthNaverManager.naverLogout();
+        }else if(oAuthFacebookManager.requestLoginInfo()){
+            oAuthFacebookManager.facebookLogout();
+        }else if(oAuthGoogleManager.requestLoginInfo()){
+            oAuthGoogleManager.googleLogout();
         }else{
             oAuthLogoutInterface.responseLogoutResult(null,false);
         }
@@ -143,6 +179,10 @@ public class OAuthManager implements OAuthCovenantInterface{
             oAuthKakaoManager.kakaoDelete();
         }else if(oAuthNaverManager.requestLoginInfo()){
             oAuthNaverManager.naverDelete();
+        }else if(oAuthFacebookManager.requestLoginInfo()){ // 연동해제 기능 재확인 필요
+            oAuthFacebookManager.facebookLogout();
+        }else if(oAuthGoogleManager.requestLoginInfo()){
+            oAuthGoogleManager.googleDelete();
         }else{
             oAuthLogoutInterface.responseDeleteResult(null,false,"로그인 접속 정보 조회 오류");
         }
@@ -156,10 +196,13 @@ public class OAuthManager implements OAuthCovenantInterface{
     public Boolean responseOnActivityResult(int requestCode, int resultCode, Intent data){
         if(oAuthKakaoManager.checkActivityResult(requestCode,resultCode,data)){
             return true;
+        }else if(oAuthFacebookManager.checkActivityResult(requestCode, resultCode, data)){
+            return true;
+        }else if(oAuthGoogleManager.checkActivityResult(requestCode, resultCode, data)){
+            return false;  // 구글 핸들러 사용으로 인한 반환값 False;
         }else{
             return false;
         }
-
         // naver 콜백 없음
     }
 
@@ -172,6 +215,10 @@ public class OAuthManager implements OAuthCovenantInterface{
             oAuthKakaoManager.requestUserInfo();
         }else if(oAuthNaverManager.requestLoginInfo()){
             oAuthNaverManager.requestUserInfo();
+        }else if(oAuthFacebookManager.requestLoginInfo()){
+            oAuthFacebookManager.requestUserInfo();
+        }else if(oAuthGoogleManager.requestLoginInfo()){
+            oAuthGoogleManager.requestUserInfo();
         }else{
             oAuthUserFrofileInterface.responseUserFrofileInfoResult(null,false,"로그인 접속 오류",null);
         }

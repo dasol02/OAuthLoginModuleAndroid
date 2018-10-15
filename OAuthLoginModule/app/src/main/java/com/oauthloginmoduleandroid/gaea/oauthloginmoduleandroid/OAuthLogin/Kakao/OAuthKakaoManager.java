@@ -52,7 +52,7 @@ public class OAuthKakaoManager extends OAuthCovenantClass{
         Session.getCurrentSession().checkAndImplicitOpen();
 
         // 우선권 부여 : AuthType.KAKAO_TALK
-        // kakao talk 미 설치시 KAKAO_ACCOUNT로 연경
+        // kakao talk 미 설치시 KAKAO_ACCOUNT로 연결
         Session.getCurrentSession().open(AuthType.KAKAO_LOGIN_ALL,mContext);
     }
 

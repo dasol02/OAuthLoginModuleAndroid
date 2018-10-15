@@ -29,7 +29,7 @@ dependencies {
 
     /*카카오*/
     implementation group: 'com.kakao.sdk', name: 'usermgmt', version: project.KAKAO_SDK_VERSION  // 카카오 로그인 sdk를 사용하기 위해 필요.
-//    implementation group: 'com.kakao.sdk', name: 'kakaotalk', version: project.KAKAO_SDK_VERSION  // 카카오톡 sdk를 사용하기 위해 필요.
+
 
     /*네이버*/
     implementation project(path: ':naveridlogin_android_sdk_4.2.0')
@@ -38,4 +38,14 @@ dependencies {
     implementation "com.android.support:support-core-utils:${support_version}"
     implementation "com.android.support:customtabs:${support_version}"
     implementation "com.android.support:support-v4:${support_version}"
+
+    /*페이스북*/
+    implementation 'com.facebook.android:facebook-login:[4,5)'
+
+
+    /*구글*/
+    implementation 'com.google.android.gms:play-services-auth:15.0.1'
+
+
+
 }

@@ -1,12 +1,20 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid;
 
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -25,6 +33,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 사용자 정보
         button_user_frofile= (Button)findViewById(R.id.button_user_frofile);
         button_user_frofile.setOnClickListener(this);
+
+
+        //해시키 생성
+        getHashKey();
     }
 
     @Override
@@ -65,6 +77,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             default:
                 break;
+        }
+    }
+
+    /**
+     * 해쉬 키값 생성
+     */
+    private void getHashKey(){
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo("com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid", PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("OAuth Main Activity","key_hash : "+ Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
         }
     }
 }

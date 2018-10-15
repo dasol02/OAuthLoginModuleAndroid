@@ -1,9 +1,6 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Base64;
@@ -11,12 +8,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthLoginInterface;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener, OAuthLoginInterface {
 
@@ -41,9 +42,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         OAuthManager.getsInstance().setCallBackActivity(LoginActivity.this);
         OAuthManager.getsInstance().setoAuthLoginInterface(this);
 
-        getHashKey();
     }
-
 
     @Override
     protected void onDestroy() {
@@ -52,8 +51,20 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
+
+
+    private void handleSignInResult(Task<GoogleSignInAccount> task) {
+        try {
+            GoogleSignInAccount account = task.getResult(ApiException.class);
+            Log.w("GOOGLE", "successfully");
+        } catch (ApiException e) {
+            Log.w("GOOGLE", "signInResult:failed code=" + e.getStatusCode());
+        }
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if(OAuthManager.getsInstance().responseOnActivityResult(requestCode,resultCode,data)){
             return;
         }else{
@@ -61,6 +72,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
     }
 
+
+    // Google end
 
     @Override
     public void onClick(View view) {
@@ -73,33 +86,15 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_NAVER);
                 break;
             case R.id.button_login_facebook:
+                OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_FACEBOOK);
                 break;
             case R.id.button_login_google:
+                OAuthManager.getsInstance().requestSNSLogin(SNSAuthType.SNS_GOOGLE);
                 break;
             default:
                 break;
         }
     }
-
-
-    /**
-     * 해쉬 키값 생성
-     */
-    private void getHashKey(){
-        try {
-            PackageInfo info = getPackageManager().getPackageInfo("com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid", PackageManager.GET_SIGNATURES);
-            for (Signature signature : info.signatures) {
-                MessageDigest md = MessageDigest.getInstance("SHA");
-                md.update(signature.toByteArray());
-                Log.d("OAuth Login Activity","key_hash="+ Base64.encodeToString(md.digest(), Base64.DEFAULT));
-            }
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-    }
-
 
 
     /**

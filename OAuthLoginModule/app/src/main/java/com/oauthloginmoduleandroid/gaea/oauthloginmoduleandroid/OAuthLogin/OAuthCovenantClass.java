@@ -15,6 +15,11 @@ public abstract class OAuthCovenantClass {
     protected static String OAUTH_CLIENT_SECRET = "5_uvXsmbPj";
     protected static String OAUTH_CLIENT_NAME = "loginmoduleapp";
 
+    /**
+     * Google Activity ForResult
+     */
+    protected static int OAUTH_GOOGLE_CLIENT_FOR_RESULT = 9901;
+
 
 
 
