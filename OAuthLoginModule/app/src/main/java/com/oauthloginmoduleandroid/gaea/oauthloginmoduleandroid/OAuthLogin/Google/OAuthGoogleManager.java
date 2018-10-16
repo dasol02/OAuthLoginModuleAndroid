@@ -13,16 +13,16 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthCovenantClass;
-
-import java.util.concurrent.Executor;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.R;
 
 
 public class OAuthGoogleManager extends OAuthCovenantClass {
 
     private static final String TAG = "OAuth Google";
 
-    GoogleSignInClient mGoogleSignInClient;
-    GoogleSignInAccount account;
+    private GoogleSignInClient mGoogleSignInClient;
+    private GoogleSignInAccount mAccount;
     private static OAuthGoogleManager sInstance;
 
     public static OAuthGoogleManager getInstance() {
@@ -37,7 +37,12 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      * Google 셋팅
      */
     public void setGoogleOAuthSetting() {
-
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .requestIdToken(mContext.getString(R.string.server_client_id))
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
+        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
 
     }
 
@@ -46,10 +51,10 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      * Google 로그인 상태 호출
      */
     public Boolean requestLoginInfo() {
-        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(mContext);
-        if(account == null){
+        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
+        if (mAccount == null) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }
@@ -59,49 +64,56 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      * Google 로그인
      */
     public void googleLogin() {
-        googleSetting();
-        signIn();
-    }
-
-    //** Google
-    private void googleSetting(){
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
-        account = GoogleSignIn.getLastSignedInAccount(mContext);
-    }
-
-
-    private void signIn() {
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        mContext.startActivityForResult(signInIntent,OAUTH_GOOGLE_CLIENT_FOR_RESULT);
+        mContext.startActivityForResult(signInIntent, OAUTH_GOOGLE_CLIENT_FOR_RESULT);
     }
 
-    public void handleSignInResult(Task<GoogleSignInAccount> task) {
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            Log.w("GOOGLE", "successfully");
-        } catch (ApiException e) {
-            Log.w("GOOGLE", "signInResult:failed code=" + e.getStatusCode());
+
+    /**
+     * 구글 연동 화면 생성 여부
+     * true : kakao 호출, fasle : 미호출
+     */
+    public Boolean checkActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == OAUTH_GOOGLE_CLIENT_FOR_RESULT) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            handleSignInResult(task);
+            return true;
+        } else {
+            return false;
         }
     }
+
+    /**
+     * 로그인 핸들러
+     * @param task Intent
+     */
+    private void handleSignInResult(Task<GoogleSignInAccount> task) {
+        try {
+            mAccount = task.getResult(ApiException.class);
+            String accessToken = mAccount.getIdToken();
+            String userId = mAccount.getId();
+            String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
+            mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_GOOGLE,true,result,null);
+        } catch (ApiException e) {
+            Log.w(TAG, " login Fail \ncode=" + e.getStatusCode());
+            mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_GOOGLE,false,null,String.valueOf(e.getStatusCode()));
+        }
+    }
+
 
     /**
      * Google 로그아웃
      */
     public void googleLogout() {
-        Log.d(TAG, " Logout TRY");
-
-        if(requestLoginInfo()){
+        if (requestLoginInfo()) {
             mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
-                    Log.d(TAG, "Logout SUCCESS");
+                    mOAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_GOOGLE,true);
                 }
             });
-        }else{
-            Log.d(TAG, "Logout FAIL IS NOT LOGIN");
+        } else {
+            mOAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_GOOGLE,false);
         }
 
     }
@@ -112,16 +124,16 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      */
     public void googleDelete() {
         Log.d(TAG, " Delete TRY");
-        if(requestLoginInfo()) {
+        if (requestLoginInfo()) {
             mGoogleSignInClient.revokeAccess()
                     .addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
-                            Log.d(TAG, "Delete SUCCESS");
+                            mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_GOOGLE,true,null);
                         }
                     });
-        }else{
-            Log.d(TAG, "Delete FAIL IS NOT LOGIN");
+        } else {
+            mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_GOOGLE,false,null);
         }
     }
 
@@ -130,14 +142,21 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      * Google 사용자 정보 조회
      */
     public void requestUserInfo() {
-        GoogleSignInAccount acct = GoogleSignIn.getLastSignedInAccount(mContext);
-        if (acct != null) {
-            String personName = acct.getDisplayName();
-            String personGivenName = acct.getGivenName();
-            String personFamilyName = acct.getFamilyName();
-            String personEmail = acct.getEmail();
-            String personId = acct.getId();
-            Uri personPhoto = acct.getPhotoUrl();
+        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
+        if (mAccount != null) {
+
+            String userdata = "\n";
+            userdata = userdata+"\n"+"email = "+mAccount.getEmail();
+            userdata = userdata+"\n"+"name = "+mAccount.getDisplayName();
+            String accessToken = mAccount.getIdToken();
+            String userId = mAccount.getId();
+            String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
+            userdata = userdata+result;
+
+            mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_GOOGLE,true,userdata,null);
+            Log.d(TAG, userdata);
+        }else{
+            mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_GOOGLE,false,null,null);
         }
     }
 
@@ -146,7 +165,13 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      * Google 토큰 갱신
      */
     public void googleRefreshToken() {
-
+        mGoogleSignInClient.silentSignIn()
+                .addOnCompleteListener(new OnCompleteListener<GoogleSignInAccount>() {
+                    @Override
+                    public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
+                        handleSignInResult(task);
+                    }
+                });
     }
 
 
@@ -156,24 +181,13 @@ public class OAuthGoogleManager extends OAuthCovenantClass {
      * @return
      */
     public String getrequestToken() {
-
-        return "";
+        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
+        String accessToken = mAccount.getIdToken();
+        String userId = mAccount.getId();
+        String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
+        return result;
     }
 
-
-    /**
-     * 구글 연동 화면 생성 여부
-     * true : kakao 호출, fasle : 미호출
-     */
-    public Boolean checkActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == OAUTH_GOOGLE_CLIENT_FOR_RESULT){
-            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-            handleSignInResult(task);
-            return true;
-        }else{
-            return false;
-        }
-    }
 
 
 }

@@ -8,25 +8,26 @@
 
 
     <LinearLayout
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <Button
-            android:layout_weight="1"
-            android:id="@+id/button_user_frofile"
-            android:text="UserFrofile"
-            android:layout_width="0dp"
-            android:layout_height="60dp" />
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:orientation="horizontal">
 
         <Button
+            android:id="@+id/button_user_frofile"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
             android:layout_weight="1"
-            android:text="LOGIN"
+            android:text="UserFrofile" />
+
+        <Button
             android:id="@+id/button_login_view_go"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_gravity="center_horizontal"/>
+            android:layout_gravity="center_horizontal"
+            android:layout_weight="1"
+            android:text="LOGIN" />
     </LinearLayout>
 
 

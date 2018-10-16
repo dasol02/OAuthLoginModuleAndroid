@@ -71,6 +71,7 @@ public class OAuthFacebookManager extends OAuthCovenantClass{
                 String accessToken = loginResult.getAccessToken().getToken();
                 String userId = loginResult.getAccessToken().getUserId();
                 String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
+                Log.d("OAuth FACEBOOK","LOGIN onSuccess");
                 mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_FACEBOOK, true, result, null);
             }
 

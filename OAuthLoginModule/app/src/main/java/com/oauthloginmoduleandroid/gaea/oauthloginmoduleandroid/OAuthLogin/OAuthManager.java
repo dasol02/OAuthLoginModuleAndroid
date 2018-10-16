@@ -4,12 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.Task;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Facebook.OAuthFacebookManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Google.OAuthGoogleManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.OAuthKakaoManager;

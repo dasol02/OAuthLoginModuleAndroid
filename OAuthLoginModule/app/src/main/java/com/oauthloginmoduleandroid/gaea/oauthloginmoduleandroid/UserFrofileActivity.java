@@ -91,7 +91,6 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
     @Override
     public void responseLogoutResult(SNSAuthType snsName, Boolean result) {
 
-
         if(result){
             Log.d("OAuth","LOGOUT SUCCESS \nSNS NAME ="+getSNSname(snsName));
             finish();

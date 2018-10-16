@@ -51,17 +51,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
 
-
-
-    private void handleSignInResult(Task<GoogleSignInAccount> task) {
-        try {
-            GoogleSignInAccount account = task.getResult(ApiException.class);
-            Log.w("GOOGLE", "successfully");
-        } catch (ApiException e) {
-            Log.w("GOOGLE", "signInResult:failed code=" + e.getStatusCode());
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -125,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         }
 
         if(result){
-            Log.d("OAuth","LOGIN SUCCESS \nSNS NAME ="+mSNSName+"\nTOKEN = "+token);
+            Log.d("OAuth","LOGIN SUCCESS \nSNS NAME ="+mSNSName+"\n==TOKEN=="+token);
             finish();
         }else{
             Log.d("OAuth","LOGIN FALE \nSNS NAME ="+mSNSName+"\nERROR = "+error);

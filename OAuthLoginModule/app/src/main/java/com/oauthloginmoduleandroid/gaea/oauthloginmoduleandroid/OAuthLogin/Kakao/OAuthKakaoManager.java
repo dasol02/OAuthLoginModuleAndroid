@@ -80,8 +80,7 @@ public class OAuthKakaoManager extends OAuthCovenantClass{
         String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken();
         String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken();
 
-        Log.d("OAuth KAKAO", "onAccessTokenReceived =\naccToken = "+accToken+"\nrefreshToken = "+refreshToken);
-
+//        Log.d("OAuth KAKAO", "onAccessTokenReceived =\naccToken = "+accToken+"\nrefreshToken = "+refreshToken);
 
         if(!TextUtils.isEmpty(accToken) && !TextUtils.isEmpty(refreshToken)){
             return true;
