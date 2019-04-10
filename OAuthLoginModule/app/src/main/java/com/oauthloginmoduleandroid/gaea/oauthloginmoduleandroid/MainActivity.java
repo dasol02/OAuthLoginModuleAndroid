@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 
 import java.security.MessageDigest;
@@ -52,9 +53,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if(oAuthManager == null){
             oAuthManager = OAuthManager.getsInstance();
         }
-        Boolean loginStateSuccess = oAuthManager.getLoginState();
-        button_user_frofile.setVisibility(loginStateSuccess ? View.VISIBLE : View.GONE); // 유저 정보 버튼
-        button_login_view_go.setVisibility(loginStateSuccess ? View.GONE : View.VISIBLE); // 로그인 버튼
+        oAuthManager.getLoginState(this, new OAuthManager.OAuthIsLoginInterface() {
+            @Override
+            public void responseIsLoginResult(Boolean result, String error) {
+                button_user_frofile.setVisibility(result ? View.VISIBLE : View.GONE); // 유저 정보 버튼
+                button_login_view_go.setVisibility(result ? View.GONE : View.VISIBLE); // 로그인 버튼
+            }
+        });
+
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Facebook;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,8 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+
 import org.json.JSONObject;
 
 import java.util.Arrays;
@@ -35,7 +38,7 @@ public class OAuthFacebookManager extends OAuthBaseClass {
     }
 
     @Override
-    public void initOAuthSDK() {
+    public void initOAuthSDK(Activity callBackActivity) {
          //  facebook 셋팅
         callbackManager = CallbackManager.Factory.create();
     }
@@ -44,21 +47,17 @@ public class OAuthFacebookManager extends OAuthBaseClass {
 
     // 페이스북 로그인 상태 호출
     @Override
-    public Boolean requestIsLogin() {
+    public void requestIsLogin(Activity callBackActivity, OAuthManager.OAuthIsLoginInterface oAuthIsLoginInterface) {
         // 로그인 확인
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
-        if (isLoggedIn) {
-            return true;
-        } else {
-            return false;
-        }
+        oAuthIsLoginInterface.responseIsLoginResult(isLoggedIn,"nill");
     }
 
     // 페이스북 로그인
     @Override
-    public void requestOAuthLogin() {
-        LoginManager.getInstance().logInWithReadPermissions(mContext, Arrays.asList("public_profile", "email"));
+    public void requestOAuthLogin(Activity callBackActivity, final OAuthManager.OAuthLoginInterface oAuthLoginInterface) {
+        LoginManager.getInstance().logInWithReadPermissions(callBackActivity, Arrays.asList("public_profile", "email"));
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -66,18 +65,18 @@ public class OAuthFacebookManager extends OAuthBaseClass {
                 String userId = loginResult.getAccessToken().getUserId();
                 String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
                 Log.d("OAuth FACEBOOK","LOGIN onSuccess");
-                mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_FACEBOOK, true, result, null);
+                oAuthLoginInterface.responseLoginResult(true, result, null);
             }
 
             @Override
             public void onCancel() {
-                mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_FACEBOOK,false,null,"\nError code : onCancel");
+                oAuthLoginInterface.responseLoginResult(false,null,"\nError code : onCancel");
                 Log.d("OAuth FACEBOOK","LOGIN onCancel");
             }
 
             @Override
             public void onError(FacebookException error) {
-                mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_FACEBOOK,false,null,"\nError code : "+error.toString());
+                oAuthLoginInterface.responseLoginResult(false,null,"\nError code : "+error.toString());
                 Log.d("OAuth FACEBOOK","LOGIN onError : \n"+error.toString());
             }
         });
@@ -86,42 +85,58 @@ public class OAuthFacebookManager extends OAuthBaseClass {
 
     // 페이스북 로그아웃
     @Override
-    public void requestOAuthLogout() {
+    public void requestOAuthLogout(Activity callBackActivity, final OAuthManager.OAuthLogoutInterface oAuthLogoutInterface) {
         LoginManager.getInstance().logOut();
-        if(requestIsLogin()){
-            Log.d(TAG,"Logout Fail");
-            mResponseOAuthCovenantInterface.responseOAuthLogoutResult(OAuthType.OAuth_FACEBOOK,false);
-        }else{
-            Log.d(TAG,"Logout Success");
-            mResponseOAuthCovenantInterface.responseOAuthLogoutResult(OAuthType.OAuth_FACEBOOK,true);
-        };
+        requestIsLogin(callBackActivity, new OAuthManager.OAuthIsLoginInterface() {
+            @Override
+            public void responseIsLoginResult(Boolean result, String error) {
+                if (result) {
+                    oAuthLogoutInterface.responseLogoutResult(false);
+                } else {
+                    oAuthLogoutInterface.responseLogoutResult(true);
+                }
+            }
+        });
     }
 
 
     // 페이스북 연동 해제
     @Override
-    public void requestOAuthremove() {
-        // 연동해제 기능 없는 것으로 파악됨.
+    public void requestOAuthRemove(Activity callBackActivity, final OAuthManager.OAuthRemoveInterface oAuthRemoveInterface) {
+
+        // 연동해제 기능 없음.
+        LoginManager.getInstance().logOut();
+        requestIsLogin(callBackActivity, new OAuthManager.OAuthIsLoginInterface() {
+            @Override
+            public void responseIsLoginResult(Boolean result, String error) {
+                if (result) {
+                    oAuthRemoveInterface.responseRemoveResult(false,"");
+                } else {
+                    oAuthRemoveInterface.responseRemoveResult(true,"");
+                }
+            }
+        });
+
 
     }
 
     // 페이스북 사용자 정보 조회
     @Override
-    public void requestUserInfo(){
+    public void requestUserInfo(Activity callBackActivity, final OAuthManager.OAuthUserFrofileInterface oAuthUserFrofileInterface){
         GraphRequest request;
         request = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
             @Override
             public void onCompleted(JSONObject user, GraphResponse response) {
                 if (response.getError() != null) {
                     Log.d("OAuth FACEBOOK"," REQUEST USER INFO Fail : ");
-                    mResponseOAuthCovenantInterface.responseOAuthUserFrofileInfoResult(OAuthType.OAuth_FACEBOOK,false,"사용자 정보 호출 실패",response.getError().toString());
+                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",response.getError().toString());
                 } else {
                     Log.d("OAuth FACEBOOK"," REQUEST USER INFO Success : ");
                     String accessToken = AccessToken.getCurrentAccessToken().getToken();
                     String userId = AccessToken.getCurrentAccessToken().getUserId();
                     String result = "\nuser: \n" + user.toString()+"\n\nuserId : "+userId+"\n\n\naccessToken : "+accessToken;
                     Log.d("OAuth FACEBOOK",result);
-                    mResponseOAuthCovenantInterface.responseOAuthUserFrofileInfoResult(OAuthType.OAuth_FACEBOOK,true,result,null);
+                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,result,null);
                 }
             }
         });

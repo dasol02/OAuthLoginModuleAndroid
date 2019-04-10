@@ -71,17 +71,9 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
      * @param oAuthType Login OAuth 연동사 종류
      */
     public void requestOAuthLogin(OAuthBaseClass.OAuthType oAuthType){
-
-        // 로그인 결과 콜백 리스너
-        OAuthManager.getsInstance().setoAuthLoginInterface(new OAuthManager.OAuthLoginInterface() {
-            /**
-             * 로그인 결과 CallBack
-             * @param oAuthType : 로그인 시도한 연동사
-             * @param result : 결과 (true : 연결 성공, false : 실패)
-             * @param token : 해당 연동사 로그인 토큰
-             */
+        OAuthManager.getsInstance().requestSNSLogin(oAuthType, this, new OAuthManager.OAuthLoginInterface() {
             @Override
-            public void responseLoginResult(OAuthBaseClass.OAuthType oAuthType, Boolean result, String token, String error) {
+            public void responseLoginResult(Boolean result, String token, String error) {
                 if(result){
                     finish();
                 }else{
@@ -89,8 +81,5 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
         });
-
-        // 로그인 요청
-        OAuthManager.getsInstance().requestSNSLogin(oAuthType, this);
     }
 }

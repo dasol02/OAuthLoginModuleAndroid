@@ -26,6 +26,7 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_frofile);
 
+        initViewBinding();
         // 사용자 정보 조회
         requestUserFrofile();
     }
@@ -119,26 +120,16 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
      * OAuth 로그아웃
      */
     private void requestLogout() {
-
-        // 로그아웃 결과 리스너
-        OAuthManager.getsInstance().setoAuthLogoutInterface(new OAuthManager.OAuthLogoutInterface() {
+        OAuthManager.getsInstance().requestSNSLogOut(this, new OAuthManager.OAuthLogoutInterface() {
             @Override
-            public void responseLogoutResult(OAuthBaseClass.OAuthType oAuthType, Boolean result) {
+            public void responseLogoutResult(Boolean result) {
                 if(result){
                     finish();
                 }else{
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(),"로그아웃 실패",Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    showToastMsg("Logout","로그아웃 실패");
                 }
             }
         });
-
-        // 로그아웃
-        OAuthManager.getsInstance().requestSNSDelete();
     }
 
 
@@ -147,26 +138,16 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
      * OAuth 연동해제
      */
     private void requestRemove() {
-
-        // 연동해제 결과 리스너
-        OAuthManager.getsInstance().setoAuthRemoveInterface(new OAuthManager.OAuthRemoveInterface() {
+        OAuthManager.getsInstance().requestSNSDelete(this, new OAuthManager.OAuthRemoveInterface() {
             @Override
-            public void responseRemoveResult(OAuthBaseClass.OAuthType oAuthType, Boolean result, final String error) {
+            public void responseRemoveResult(Boolean result, String error) {
                 if(result){
                     finish();
                 }else{
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(),"연동해제 실패 : "+error,Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    showToastMsg("Remove","연동해제 실패 : "+error);
                 }
             }
         });
-
-        // 연동해제
-        OAuthManager.getsInstance().requestSNSLogOut();
     }
 
 
@@ -174,29 +155,39 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
      * OAuth 사용자 정보 조회
      */
     private void requestUserFrofile() {
-
-        // 사용자 정보 조회 리스너
-        OAuthManager.getsInstance().setoAuthUserFrofileInterface(new OAuthManager.OAuthUserFrofileInterface() {
+        // 사용자 정보 조회
+        OAuthManager.getsInstance().requestUserFrofileInfo(this, new OAuthManager.OAuthUserFrofileInterface() {
             @Override
-            public void responseUserFrofileInfoResult(final OAuthBaseClass.OAuthType oAuthType, Boolean result, final String userinfo, String error) {
-
+            public void responseUserFrofileInfoResult(Boolean result, final String userinfo, String error) {
                 if(result){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            text_title_user_frofile.setText(getSNSname(oAuthType));
+                            text_title_user_frofile.setText("사용자 정보");
                             text_user_frofile.setText(userinfo);
                         }
                     });
 
                 }else{
-                    Toast.makeText(getApplicationContext(),"정보 조회 실패 : "+userinfo,Toast.LENGTH_SHORT).show();
+                    showToastMsg("UserFrofile","정보 조회 실패 : "+userinfo);
                 }
-
             }
         });
+    }
 
-        // 사용자 정보 조회
-        OAuthManager.getsInstance().responseUserFrofileInfo();
+
+
+    /**
+     * 연동 실패시 Toast 메시지 노출
+     * @param tag 호출 API 이름
+     * @param msg 에러 내용
+     */
+    private void showToastMsg(final String tag,final String msg){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(),tag+" : "+msg,Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

@@ -5,39 +5,18 @@ import android.content.Intent;
 
 
 public abstract class OAuthBaseClass {
-    protected static ResponseOAuthCovenantInterface mResponseOAuthCovenantInterface;
-    protected static Activity mContext;
-    protected static int OAUTH_GOOGLE_CLIENT_FOR_RESULT = 9901; // Google Activity ForResult
-
-    public void setResponseOAuthCovenantInterface(ResponseOAuthCovenantInterface responseOAuthCovenantInterface){
-        mResponseOAuthCovenantInterface = responseOAuthCovenantInterface;
-    }
-
-    public void setResponseOAuthCovenantContext(Activity context){
-        mContext = context;
-    }
-
     // OAuth SDK Setting
     public abstract void requestStartAppOAuth();
     public abstract void requestDidAppOAuth();
-    public abstract void initOAuthSDK();
+    public abstract void initOAuthSDK(Activity callBackActivity);
 
     // OAuth Request
-    public abstract Boolean requestIsLogin();
-    public abstract void requestOAuthLogin();
-    public abstract void requestOAuthLogout();
-    public abstract void requestOAuthremove();
-    public abstract void requestUserInfo();
+    public abstract void requestIsLogin(Activity callBackActivity, OAuthManager.OAuthIsLoginInterface oAuthIsLoginInterface);
+    public abstract void requestOAuthLogin(Activity callBackActivity, OAuthManager.OAuthLoginInterface oAuthLoginInterface);
+    public abstract void requestOAuthLogout(Activity callBackActivity, OAuthManager.OAuthLogoutInterface oAuthLogoutInterface);
+    public abstract void requestOAuthRemove(Activity callBackActivity, OAuthManager.OAuthRemoveInterface oAuthRemoveInterface);
+    public abstract void requestUserInfo(Activity callBackActivity, OAuthManager.OAuthUserFrofileInterface oAuthUserFrofileInterface);
     public abstract Boolean requestActivityResult(int requestCode, int resultCode, Intent data);
-
-
-    // OAuth Result Response InterFace
-    public interface ResponseOAuthCovenantInterface {
-        void responseOAuthCovenantLoginResult(OAuthType oAuthType, Boolean result, String token, String error);
-        void responseOAuthLogoutResult(OAuthType oAuthType, Boolean result);
-        void responseOAuthRemoveResult(OAuthType oAuthType, Boolean result, String error);
-        void responseOAuthUserFrofileInfoResult(OAuthType oAuthType, Boolean result, String userinfo, String error);
-    }
 
     // OAuth SNS Type
     public enum OAuthType{

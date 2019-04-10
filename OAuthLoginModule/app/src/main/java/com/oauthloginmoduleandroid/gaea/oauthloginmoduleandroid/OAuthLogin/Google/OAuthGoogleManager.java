@@ -1,5 +1,6 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Google;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -12,16 +13,18 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.R;
 
 
 public class OAuthGoogleManager extends OAuthBaseClass {
 
-    private static final String TAG = "OAuth Google";
+    protected static int OAUTH_GOOGLE_CLIENT_FOR_RESULT = 9901; // Google Activity ForResult
 
+    private static final String TAG = "OAuth Google";
     private GoogleSignInClient mGoogleSignInClient;
     private GoogleSignInAccount mAccount;
-
+    private OAuthManager.OAuthLoginInterface mOAuthLoginInterface;
 
     @Override
     public void requestStartAppOAuth() {
@@ -34,68 +37,80 @@ public class OAuthGoogleManager extends OAuthBaseClass {
     }
 
     @Override
-    public void initOAuthSDK() {
+    public void initOAuthSDK(Activity callBackActivity) {
         // Google 셋팅
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
-                .requestIdToken(mContext.getString(R.string.server_client_id))
+                .requestIdToken(callBackActivity.getString(R.string.server_client_id))
                 .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(mContext, gso);
-        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
+        mGoogleSignInClient = GoogleSignIn.getClient(callBackActivity, gso);
+        mAccount = GoogleSignIn.getLastSignedInAccount(callBackActivity);
     }
 
 
     // Google 로그인 상태 호출
     @Override
-    public Boolean requestIsLogin() {
-        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
+    public void requestIsLogin(Activity callBackActivity, OAuthManager.OAuthIsLoginInterface oAuthIsLoginInterface) {
+        mAccount = GoogleSignIn.getLastSignedInAccount(callBackActivity);
         if (mAccount == null) {
-            return false;
+            oAuthIsLoginInterface.responseIsLoginResult(false,"");
         } else {
-            return true;
+            oAuthIsLoginInterface.responseIsLoginResult(true,"");
         }
     }
 
     // Google 로그인
     @Override
-    public void requestOAuthLogin() {
+    public void requestOAuthLogin(Activity callBackActivity, OAuthManager.OAuthLoginInterface oAuthLoginInterface) {
+        this.mOAuthLoginInterface = oAuthLoginInterface;
         Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        mContext.startActivityForResult(signInIntent, OAUTH_GOOGLE_CLIENT_FOR_RESULT);
+        callBackActivity.startActivityForResult(signInIntent, OAUTH_GOOGLE_CLIENT_FOR_RESULT);
     }
 
     // Google 로그아웃
     @Override
-    public void requestOAuthLogout() {
-        if (requestIsLogin()) {
-            mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    mResponseOAuthCovenantInterface.responseOAuthLogoutResult(OAuthType.OAuth_GOOGLE,true);
+    public void requestOAuthLogout(Activity callBackActivity, final OAuthManager.OAuthLogoutInterface oAuthLogoutInterface) {
+        requestIsLogin(callBackActivity, new OAuthManager.OAuthIsLoginInterface() {
+            @Override
+            public void responseIsLoginResult(Boolean result, String error) {
+                if(result) {
+                    mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            oAuthLogoutInterface.responseLogoutResult(true);
+                        }
+                    });
+                }else {
+                    oAuthLogoutInterface.responseLogoutResult(false);
                 }
-            });
-        } else {
-            mResponseOAuthCovenantInterface.responseOAuthLogoutResult(OAuthType.OAuth_GOOGLE,false);
-        }
-
+            }
+        });
     }
 
     /**
      * Google 연동 해제
+     * @param callBackActivity
+     * @param oAuthRemoveInterface
      */
     @Override
-    public void requestOAuthremove() {
+    public void requestOAuthRemove(Activity callBackActivity, final OAuthManager.OAuthRemoveInterface oAuthRemoveInterface) {
         Log.d(TAG, " Delete TRY");
-        if (requestIsLogin()) {
-            mGoogleSignInClient.revokeAccess()
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            mResponseOAuthCovenantInterface.responseOAuthRemoveResult(OAuthType.OAuth_GOOGLE,true,null);
-                        }
-                    });
-        } else {
-            mResponseOAuthCovenantInterface.responseOAuthRemoveResult(OAuthType.OAuth_GOOGLE,false,null);
-        }
+        requestIsLogin(callBackActivity, new OAuthManager.OAuthIsLoginInterface() {
+            @Override
+            public void responseIsLoginResult(Boolean result, String error) {
+                if (result) {
+                    mGoogleSignInClient.revokeAccess()
+                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                @Override
+                                public void onComplete(@NonNull Task<Void> task) {
+                                    oAuthRemoveInterface.responseRemoveResult(true,null);
+                                }
+                            });
+                }else{
+                    oAuthRemoveInterface.responseRemoveResult(false,null);
+                }
+            }
+        });
     }
 
     /**
@@ -116,10 +131,12 @@ public class OAuthGoogleManager extends OAuthBaseClass {
 
     /**
      * Google 사용자 정보 조회
+     * @param callBackActivity
+     * @param oAuthUserFrofileInterface
      */
     @Override
-    public void requestUserInfo() {
-        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
+    public void requestUserInfo(Activity callBackActivity, OAuthManager.OAuthUserFrofileInterface oAuthUserFrofileInterface) {
+        mAccount = GoogleSignIn.getLastSignedInAccount(callBackActivity);
         if (mAccount != null) {
 
             String userdata = "\n";
@@ -130,10 +147,10 @@ public class OAuthGoogleManager extends OAuthBaseClass {
             String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
             userdata = userdata+result;
 
-            mResponseOAuthCovenantInterface.responseOAuthUserFrofileInfoResult(OAuthType.OAuth_GOOGLE,true,userdata,null);
+            oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,userdata,null);
             Log.d(TAG, userdata);
         }else{
-            mResponseOAuthCovenantInterface.responseOAuthUserFrofileInfoResult(OAuthType.OAuth_GOOGLE,false,null,null);
+            oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,null);
         }
     }
 
@@ -148,10 +165,10 @@ public class OAuthGoogleManager extends OAuthBaseClass {
             String accessToken = mAccount.getIdToken();
             String userId = mAccount.getId();
             String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
-            mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_GOOGLE,true,result,null);
+            mOAuthLoginInterface.responseLoginResult(true,result,"");
         } catch (ApiException e) {
             Log.w(TAG, " login Fail \ncode=" + e.getStatusCode());
-            mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_GOOGLE,false,null,String.valueOf(e.getStatusCode()));
+            mOAuthLoginInterface.responseLoginResult(false,"",String.valueOf(e.getStatusCode()));
         }
     }
 
@@ -170,18 +187,18 @@ public class OAuthGoogleManager extends OAuthBaseClass {
     }
 
 
-    /**
-     * Google 저장되어 있는 토큰 정보 호출
-     *
-     * @return
-     */
-    public String getrequestToken() {
-        mAccount = GoogleSignIn.getLastSignedInAccount(mContext);
-        String accessToken = mAccount.getIdToken();
-        String userId = mAccount.getId();
-        String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
-        return result;
-    }
+//    /**
+//     * Google 저장되어 있는 토큰 정보 호출
+//     *
+//     * @return
+//     */
+//    public String getrequestToken() {
+//        mAccount = GoogleSignIn.getLastSignedInAccount(mResponseActivity);
+//        String accessToken = mAccount.getIdToken();
+//        String userId = mAccount.getId();
+//        String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
+//        return result;
+//    }
 
 
 
