@@ -19,10 +19,12 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
     private static OAuthLoginInterface oAuthLoginInterface;
     private static OAuthLogoutInterface oAuthLogoutInterface;
     private static OAuthUserFrofileInterface oAuthUserFrofileInterface;
+    private static OAuthRemoveInterface oAuthRemoveInterface;
 
     private static OAuthManager sInstance;
     private static Activity mActivity;
     private static OAuthBaseClass oAuthClass;
+
 
 
     public static OAuthManager getsInstance() {
@@ -107,7 +109,9 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
      * 로그인 시도
      * @param oAuthType : 연동사 이름 변수
      */
-    public void requestSNSLogin(OAuthBaseClass.OAuthType oAuthType) {
+    public void requestSNSLogin(OAuthBaseClass.OAuthType oAuthType, Activity mActivity) {
+        if(oAuthType == null){return;};
+        setCallBackActivity(mActivity);
         initOAuth(oAuthType);
         if(oAuthClass == null){return;}
         oAuthClass.requestOAuthLogin();
@@ -135,7 +139,7 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
         if(oAuthClass.requestIsLogin()){
             oAuthClass.requestOAuthremove();
         }else{
-            oAuthLogoutInterface.responseDeleteResult(null,false,"로그인 접속 정보 조회 오류");
+            oAuthRemoveInterface.responseRemoveResult(null,false,"로그인 접속 정보 조회 오류");
         }
     }
 
@@ -144,8 +148,9 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
      * 연동사 로그인 페이지 연결
      * @return -> true: 연동사 App 또는 웹뷰 진행, fasle : super진행
      */
-    public Boolean responseOnActivityResult(int requestCode, int resultCode, Intent data){
-        return oAuthClass.requestActivityResult(requestCode, resultCode, data);
+    public void responseOnActivityResult(int requestCode, int resultCode, Intent data){
+        if(oAuthClass == null){return;};
+        oAuthClass.requestActivityResult(requestCode, resultCode, data);
     }
 
 
@@ -180,6 +185,15 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
     }
 
     /**
+     * 인터페이스 추가 (연동해제)
+     * @param oAuthRemoveInterface
+     */
+    public void setoAuthRemoveInterface(OAuthRemoveInterface oAuthRemoveInterface){
+        this.oAuthRemoveInterface = oAuthRemoveInterface;
+    }
+
+
+    /**
      * 인터페이스 추가 (사용자 정보)
      * @param oAuthUserFrofileInterface
      */
@@ -198,7 +212,10 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
 
     public interface OAuthLogoutInterface {
         void responseLogoutResult(OAuthBaseClass.OAuthType oAuthType, Boolean result);
-        void responseDeleteResult(OAuthBaseClass.OAuthType oAuthType, Boolean result, String error);
+    }
+
+    public interface OAuthRemoveInterface {
+        void responseRemoveResult(OAuthBaseClass.OAuthType oAuthType, Boolean result, String error);
     }
 
 
@@ -224,7 +241,7 @@ public class OAuthManager implements OAuthBaseClass.ResponseOAuthCovenantInterfa
 
     @Override // 연동해제 결과
     public void responseOAuthRemoveResult(OAuthBaseClass.OAuthType oAuthType, Boolean result, String error) {
-        oAuthLogoutInterface.responseDeleteResult(oAuthType, result, error);
+        oAuthRemoveInterface.responseRemoveResult(oAuthType, result, error);
     }
 
     @Override // 사용자 정보 요청 결과

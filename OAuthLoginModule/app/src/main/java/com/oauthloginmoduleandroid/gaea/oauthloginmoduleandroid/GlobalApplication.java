@@ -10,6 +10,10 @@ public class GlobalApplication extends Application {
 
     private static volatile GlobalApplication obj = null;
 
+    public static GlobalApplication getGlobalApplicationContext() {
+        return obj;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -17,9 +21,18 @@ public class GlobalApplication extends Application {
         OAuthManager.getsInstance().initOAuthManagerInfoSettingScheme("DMM9F1vOnLoTdfm8Qx6w","5_uvXsmbPj","loginmoduleapp");
     }
 
-    public static GlobalApplication getGlobalApplicationContext() {
-        return obj;
+    @Override
+    public void onTerminate() {
+        super.onTerminate();
+        OAuthManager.getsInstance().requestDidApp();
     }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        OAuthManager.getsInstance().requestDidApp();
+    }
+
 
 
 }

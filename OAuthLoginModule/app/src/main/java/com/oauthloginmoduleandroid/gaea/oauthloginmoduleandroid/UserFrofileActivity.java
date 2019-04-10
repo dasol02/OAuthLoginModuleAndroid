@@ -16,7 +16,7 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuth
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 
 
-public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener, OAuthManager.OAuthLogoutInterface, OAuthManager.OAuthUserFrofileInterface {
+public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener{
 
     Button button_lougot,button_delete;
     TextView text_title_user_frofile,text_user_frofile;
@@ -26,6 +26,12 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_frofile);
 
+        // 사용자 정보 조회
+        requestUserFrofile();
+    }
+
+    // XML 이벤트 바인딩
+    public void initViewBinding(){
         button_lougot = (Button)findViewById(R.id.button_lougot);
         button_lougot.setOnClickListener(this);
 
@@ -34,118 +40,33 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
         text_title_user_frofile = (TextView)findViewById(R.id.text_title_user_frofile);
         text_user_frofile = (TextView)findViewById(R.id.text_user_frofile);
-
-        OAuthManager.getsInstance().setoAuthUserFrofileInterface(UserFrofileActivity.this);
-        OAuthManager.getsInstance().responseUserFrofileInfo();
-
     }
 
+    // Alert View 호출
+    public void createAlertView(final int requestType, String msg){
 
-    @Override
-    public void onClick(View view) {
+        showAlertView("로그아웃 하시겠습니까?", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
 
-        switch (view.getId()){
-
-            case R.id.button_lougot: // 로그아웃
-
-                showAlertView("로그아웃 하시겠습니까?", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        OAuthManager.getsInstance().setoAuthLogoutInterface(UserFrofileActivity.this);
-                        OAuthManager.getsInstance().requestSNSLogOut();
-                        dialogInterface.dismiss();
-                    }
-                }, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-
-                break;
-
-            case R.id.button_delete: // 로그인
-
-                showAlertView("이앱의 연결을 해제 하시겠습니까?", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        OAuthManager.getsInstance().setoAuthLogoutInterface(UserFrofileActivity.this);
-                        OAuthManager.getsInstance().requestSNSDelete();
-                        dialogInterface.dismiss();
-                    }
-                }, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                });
-
-                break;
-            default:
-                break;
-        }
-    }
-
-
-    @Override
-    public void responseLogoutResult(OAuthBaseClass.OAuthType oAuthType, Boolean result) {
-
-        if(result){
-            Log.d("OAuth","LOGOUT SUCCESS \nSNS NAME ="+getSNSname(oAuthType));
-            finish();
-        }else{
-            Log.d("OAuth","LOGOUT FALE \nSNS NAME ="+getSNSname(oAuthType));
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),"로그아웃 실패",Toast.LENGTH_SHORT).show();
+                if (requestType == 0){
+                    requestLogout();
+                }else if (requestType == 1){
+                    requestRemove();
                 }
-            });
-        }
+
+                dialogInterface.dismiss();
+            }
+        }, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+
     }
 
-
-    @Override
-    public void responseDeleteResult(final OAuthBaseClass.OAuthType oAuthType, Boolean result, final String error) {
-
-        if(result){
-            Log.d("OAuth","DELETE SUCCESS \nSNS NAME ="+getSNSname(oAuthType));
-            finish();
-        }else{
-            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(oAuthType)+"\nERROR ="+error);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getApplicationContext(),"연동해제 실패 : "+error,Toast.LENGTH_SHORT).show();
-                }
-            });
-
-
-        }
-    }
-
-
-    @Override
-    public void responseUserFrofileInfoResult(final OAuthBaseClass.OAuthType oAuthType, Boolean result, final String userinfo, String error) {
-
-
-        if(result){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    text_title_user_frofile.setText(getSNSname(oAuthType));
-                    text_user_frofile.setText(userinfo);
-                }
-            });
-
-        }else{
-            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(oAuthType)+"\nERROR ="+error);
-            Toast.makeText(getApplicationContext(),"정보 조회 실패 : "+userinfo,Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-
+    // Alert View 생성
     public void showAlertView(@NonNull String message, DialogInterface.OnClickListener onClickListener, DialogInterface.OnClickListener OnCancelListener){
         new AlertDialog.Builder(UserFrofileActivity.this)
                 .setMessage(message)
@@ -153,8 +74,7 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
                 .setNegativeButton("취소", OnCancelListener).show();
     }
 
-
-
+    // Log 생성 (GetOAuthName)
     public String getSNSname(OAuthBaseClass.OAuthType oAuthType){
         String mSNSName = "";
         switch (oAuthType){
@@ -177,4 +97,106 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         return mSNSName;
     }
 
+
+    // 버튼 이벤트 생성 (로그아웃, 로그인)
+    @Override
+    public void onClick(View view) {
+
+        switch (view.getId()){
+            case R.id.button_lougot:
+                createAlertView(0,"로그아웃 하시겠습니까?");
+                break;
+            case R.id.button_delete:
+                createAlertView(1,"이앱의 연결을 해제 하시겠습니까?");
+                break;
+            default:
+                break;
+        }
+    }
+
+
+    /**
+     * OAuth 로그아웃
+     */
+    private void requestLogout() {
+
+        // 로그아웃 결과 리스너
+        OAuthManager.getsInstance().setoAuthLogoutInterface(new OAuthManager.OAuthLogoutInterface() {
+            @Override
+            public void responseLogoutResult(OAuthBaseClass.OAuthType oAuthType, Boolean result) {
+                if(result){
+                    finish();
+                }else{
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),"로그아웃 실패",Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
+
+        // 로그아웃
+        OAuthManager.getsInstance().requestSNSDelete();
+    }
+
+
+
+    /**
+     * OAuth 연동해제
+     */
+    private void requestRemove() {
+
+        // 연동해제 결과 리스너
+        OAuthManager.getsInstance().setoAuthRemoveInterface(new OAuthManager.OAuthRemoveInterface() {
+            @Override
+            public void responseRemoveResult(OAuthBaseClass.OAuthType oAuthType, Boolean result, final String error) {
+                if(result){
+                    finish();
+                }else{
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(getApplicationContext(),"연동해제 실패 : "+error,Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
+
+        // 연동해제
+        OAuthManager.getsInstance().requestSNSLogOut();
+    }
+
+
+    /**
+     * OAuth 사용자 정보 조회
+     */
+    private void requestUserFrofile() {
+
+        // 사용자 정보 조회 리스너
+        OAuthManager.getsInstance().setoAuthUserFrofileInterface(new OAuthManager.OAuthUserFrofileInterface() {
+            @Override
+            public void responseUserFrofileInfoResult(final OAuthBaseClass.OAuthType oAuthType, Boolean result, final String userinfo, String error) {
+
+                if(result){
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            text_title_user_frofile.setText(getSNSname(oAuthType));
+                            text_user_frofile.setText(userinfo);
+                        }
+                    });
+
+                }else{
+                    Toast.makeText(getApplicationContext(),"정보 조회 실패 : "+userinfo,Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+        // 사용자 정보 조회
+        OAuthManager.getsInstance().responseUserFrofileInfo();
+    }
 }
