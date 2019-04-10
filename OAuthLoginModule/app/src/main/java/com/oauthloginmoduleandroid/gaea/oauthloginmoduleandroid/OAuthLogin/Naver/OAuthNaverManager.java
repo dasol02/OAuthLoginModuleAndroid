@@ -1,5 +1,6 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Naver;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
@@ -7,39 +8,38 @@ import android.util.Log;
 import com.nhn.android.naverlogin.OAuthLogin;
 import com.nhn.android.naverlogin.OAuthLoginHandler;
 import com.nhn.android.naverlogin.data.OAuthLoginState;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthCovenantClass;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 
-
-public class OAuthNaverManager extends OAuthCovenantClass {
+public class OAuthNaverManager extends OAuthBaseClass {
 
     private static final String TAG = "OAuth Naver";
-
-    private static OAuthNaverManager sInstance;
     private static OAuthLogin mOAuthLoginInstance;
 
-    public static OAuthNaverManager getInstance() {
-        if (sInstance == null) {
-            sInstance = new OAuthNaverManager();
-        }
-        return sInstance;
+
+    @Override
+    public void requestStartAppOAuth() {
+
     }
 
+    @Override
+    public void requestDidAppOAuth() {
 
-    /**
-     * 네이버 OAuth 셋팅
-     */
-    public void setNaverOAuthSetting(){
+    }
+
+    @Override
+    public void initOAuthSDK() {
+        // 네이버 OAuth 셋팅
         mOAuthLoginInstance = OAuthLogin.getInstance();
         mOAuthLoginInstance.showDevelopersLog(true);
-        mOAuthLoginInstance.init(mContext, OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET, OAUTH_CLIENT_NAME);
+        mOAuthLoginInstance.init(mContext, OAuthManager.getsInstance().getOauthClientId(), OAuthManager.getsInstance().getOauthClientSecret(), OAuthManager.getsInstance().getOauthClientName());
     }
-
 
     /**
      * 네이버 로그인 상태 호출
      */
-    public Boolean requestLoginInfo(){
+    @Override
+    public Boolean requestIsLogin() {
         if(OAuthLogin.getInstance().getState(mContext) == OAuthLoginState.OK){
             return true;
         }else{
@@ -47,50 +47,48 @@ public class OAuthNaverManager extends OAuthCovenantClass {
         }
     }
 
-
     /**
      * 네이버 로그인
      */
-    public void naverLogin(){
+    @Override
+    public void requestOAuthLogin() {
         mOAuthLoginInstance.startOauthLoginActivity(mContext, new OAuthLoginHandler() {
             @Override
             public void run(boolean success) {
                 if (success) {
                     String result = getrequestToken();
                     Log.d(TAG,result);
-                    mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_NAVER,true,result,null);
+                    mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_NAVER,true,result,null);
 
                 } else {
                     String errorCode = mOAuthLoginInstance.getLastErrorCode(mContext).getCode();
                     String errorDesc = mOAuthLoginInstance.getLastErrorDesc(mContext);
-                    mOAuthCovenantInterface.responseCovenantLoginResult(SNSAuthType.SNS_NAVER,false,null,"\nError code : "+errorCode+"\nErrorDesc : "+errorDesc);
+                    mResponseOAuthCovenantInterface.responseOAuthCovenantLoginResult(OAuthType.OAuth_NAVER,false,null,"\nError code : "+errorCode+"\nErrorDesc : "+errorDesc);
                 }
             }
         });
     }
 
-
     /**
      * 네이버 로그아웃
      */
-    public void naverLogout(){
+    @Override
+    public void requestOAuthLogout() {
         mOAuthLoginInstance.logout(mContext);
         if(mOAuthLoginInstance.getState(mContext) == OAuthLoginState.NEED_LOGIN){
             Log.d(TAG,"Logout Success");
-            mOAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_NAVER,true);
+            mResponseOAuthCovenantInterface.responseOAuthLogoutResult(OAuthType.OAuth_NAVER,true);
         }else{
             Log.d(TAG,"Logout Fail");
-            mOAuthCovenantInterface.responseLogoutResult(SNSAuthType.SNS_NAVER,false);
+            mResponseOAuthCovenantInterface.responseOAuthLogoutResult(OAuthType.OAuth_NAVER,false);
         }
     }
-
-
 
     /**
      * 네이버 연동 해제
      */
-    public void naverDelete(){
-
+    @Override
+    public void requestOAuthremove() {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
@@ -101,10 +99,10 @@ public class OAuthNaverManager extends OAuthCovenantClass {
                     Log.d(TAG, "naverDelete FAIL" );
                     Log.d(TAG, "errorCode:" + mOAuthLoginInstance.getLastErrorCode(mContext));
                     Log.d(TAG, "errorDesc:" + mOAuthLoginInstance.getLastErrorDesc(mContext));
-                    mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_NAVER,true,null);
+                    mResponseOAuthCovenantInterface.responseOAuthRemoveResult(OAuthType.OAuth_NAVER,true,null);
                 }else{
                     Log.d(TAG, "naverDelete SUCCESS");
-                    mOAuthCovenantInterface.responseDeleteResult(SNSAuthType.SNS_NAVER,true,null);
+                    mResponseOAuthCovenantInterface.responseOAuthRemoveResult(OAuthType.OAuth_NAVER,true,null);
                 }
 
             }
@@ -115,6 +113,7 @@ public class OAuthNaverManager extends OAuthCovenantClass {
     /**
      * 네이버 사용자 정보 조회
      */
+    @Override
     public void requestUserInfo(){
         AsyncTask.execute(new Runnable() {
             @Override
@@ -124,16 +123,23 @@ public class OAuthNaverManager extends OAuthCovenantClass {
                 String userInfo = mOAuthLoginInstance.requestApi(mContext, at, url);
                 if(TextUtils.isEmpty(userInfo)){
                     Log.d(TAG,"requestUserInfo FAIL");
-                    mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_NAVER,false,"사용자 정보 호출 실패",null);
+                    mResponseOAuthCovenantInterface.responseOAuthUserFrofileInfoResult(OAuthType.OAuth_NAVER,false,"사용자 정보 호출 실패",null);
                 }else{
                     Log.d(TAG,"requestUserInfo SUCCESS");
                     String result = getrequestToken();
                     result = result+"\n\n\n"+userInfo.toString();
                     Log.d(TAG,"requestUserInfo :"+result);
-                    mOAuthCovenantInterface.responseUserFrofileInfoResult(SNSAuthType.SNS_NAVER,true,result,null);
+                    mResponseOAuthCovenantInterface.responseOAuthUserFrofileInfoResult(OAuthType.OAuth_NAVER,true,result,null);
                 }
             }
         });
+    }
+
+
+
+    @Override
+    public Boolean requestActivityResult(int requestCode, int resultCode, Intent data) {
+        return false; // naver 콜백 없음
     }
 
 
@@ -170,6 +176,4 @@ public class OAuthNaverManager extends OAuthCovenantClass {
 
         return result;
     }
-
-
 }

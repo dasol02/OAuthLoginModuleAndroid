@@ -12,12 +12,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthLogoutInterface;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserFrofileInterface;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.SNSAuthType;
 
-public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener, OAuthLogoutInterface, OAuthUserFrofileInterface {
+
+public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener, OAuthManager.OAuthLogoutInterface, OAuthManager.OAuthUserFrofileInterface {
 
     Button button_lougot,button_delete;
     TextView text_title_user_frofile,text_user_frofile;
@@ -89,13 +88,13 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
 
     @Override
-    public void responseLogoutResult(SNSAuthType snsName, Boolean result) {
+    public void responseLogoutResult(OAuthBaseClass.OAuthType oAuthType, Boolean result) {
 
         if(result){
-            Log.d("OAuth","LOGOUT SUCCESS \nSNS NAME ="+getSNSname(snsName));
+            Log.d("OAuth","LOGOUT SUCCESS \nSNS NAME ="+getSNSname(oAuthType));
             finish();
         }else{
-            Log.d("OAuth","LOGOUT FALE \nSNS NAME ="+getSNSname(snsName));
+            Log.d("OAuth","LOGOUT FALE \nSNS NAME ="+getSNSname(oAuthType));
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -107,13 +106,13 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
 
     @Override
-    public void responseDeleteResult(final SNSAuthType snsName, Boolean result, final String error) {
+    public void responseDeleteResult(final OAuthBaseClass.OAuthType oAuthType, Boolean result, final String error) {
 
         if(result){
-            Log.d("OAuth","DELETE SUCCESS \nSNS NAME ="+getSNSname(snsName));
+            Log.d("OAuth","DELETE SUCCESS \nSNS NAME ="+getSNSname(oAuthType));
             finish();
         }else{
-            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(snsName)+"\nERROR ="+error);
+            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(oAuthType)+"\nERROR ="+error);
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -127,20 +126,20 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
 
     @Override
-    public void responseUserFrofileInfoResult(final SNSAuthType snsName, Boolean result, final String userinfo, String error) {
+    public void responseUserFrofileInfoResult(final OAuthBaseClass.OAuthType oAuthType, Boolean result, final String userinfo, String error) {
 
 
         if(result){
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    text_title_user_frofile.setText(getSNSname(snsName));
+                    text_title_user_frofile.setText(getSNSname(oAuthType));
                     text_user_frofile.setText(userinfo);
                 }
             });
 
         }else{
-            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(snsName)+"\nERROR ="+error);
+            Log.d("OAuth","DELETE FALE \nSNS NAME ="+getSNSname(oAuthType)+"\nERROR ="+error);
             Toast.makeText(getApplicationContext(),"정보 조회 실패 : "+userinfo,Toast.LENGTH_SHORT).show();
         }
     }
@@ -156,19 +155,19 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
 
 
 
-    public String getSNSname(SNSAuthType snsAuthType){
+    public String getSNSname(OAuthBaseClass.OAuthType oAuthType){
         String mSNSName = "";
-        switch (snsAuthType){
-            case SNS_KAKAO:
+        switch (oAuthType){
+            case OAuth_KAKAO:
                 mSNSName = "SNS_KAKAO";
                 break;
-            case SNS_NAVER:
+            case OAuth_NAVER:
                 mSNSName = "SNS_NAVER";
                 break;
-            case SNS_FACEBOOK:
+            case OAuth_FACEBOOK:
                 mSNSName = "SNS_FACEBOOK";
                 break;
-            case SNS_GOOGLE:
+            case OAuth_GOOGLE:
                 mSNSName = "SNS_GOOGLE";
                 break;
             default:

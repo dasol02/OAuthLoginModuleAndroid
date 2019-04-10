@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 해쉬 키값 생성
+     * 해시 키값 생성
      */
     private void getHashKey(){
         try {

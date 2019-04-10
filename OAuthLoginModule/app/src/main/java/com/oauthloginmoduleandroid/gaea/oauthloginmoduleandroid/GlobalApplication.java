@@ -1,10 +1,10 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid;
 
-import android.app.Activity;
 import android.app.Application;
 
 import com.kakao.auth.KakaoSDK;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.KakaoSDKAdapter;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.OAuthKakaoManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 
 public class GlobalApplication extends Application {
 
@@ -14,7 +14,7 @@ public class GlobalApplication extends Application {
     public void onCreate() {
         super.onCreate();
         obj = this;
-        KakaoSDK.init(new KakaoSDKAdapter());
+        OAuthManager.getsInstance().initOAuthManagerInfoSettingScheme("DMM9F1vOnLoTdfm8Qx6w","5_uvXsmbPj","loginmoduleapp");
     }
 
     public static GlobalApplication getGlobalApplicationContext() {
