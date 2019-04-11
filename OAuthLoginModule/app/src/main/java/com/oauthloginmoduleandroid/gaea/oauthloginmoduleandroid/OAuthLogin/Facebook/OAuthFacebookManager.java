@@ -44,14 +44,13 @@ public class OAuthFacebookManager extends OAuthBaseClass {
     }
 
 
-
     // 페이스북 로그인 상태 호출
     @Override
     public void requestIsLogin(Activity callBackActivity, OAuthManager.OAuthIsLoginInterface oAuthIsLoginInterface) {
         // 로그인 확인
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
         boolean isLoggedIn = accessToken != null && !accessToken.isExpired();
-        oAuthIsLoginInterface.responseIsLoginResult(isLoggedIn,"nill");
+        oAuthIsLoginInterface.responseIsLoginResult(isLoggedIn,null);
     }
 
     // 페이스북 로그인
@@ -64,20 +63,17 @@ public class OAuthFacebookManager extends OAuthBaseClass {
                 String accessToken = loginResult.getAccessToken().getToken();
                 String userId = loginResult.getAccessToken().getUserId();
                 String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
-                Log.d("OAuth FACEBOOK","LOGIN onSuccess");
                 oAuthLoginInterface.responseLoginResult(true, result, null);
             }
 
             @Override
             public void onCancel() {
                 oAuthLoginInterface.responseLoginResult(false,null,"\nError code : onCancel");
-                Log.d("OAuth FACEBOOK","LOGIN onCancel");
             }
 
             @Override
             public void onError(FacebookException error) {
                 oAuthLoginInterface.responseLoginResult(false,null,"\nError code : "+error.toString());
-                Log.d("OAuth FACEBOOK","LOGIN onError : \n"+error.toString());
             }
         });
 
@@ -103,14 +99,13 @@ public class OAuthFacebookManager extends OAuthBaseClass {
     // 페이스북 연동 해제
     @Override
     public void requestOAuthRemove(Activity callBackActivity, final OAuthManager.OAuthRemoveInterface oAuthRemoveInterface) {
-
         // 연동해제 기능 없음.
         LoginManager.getInstance().logOut();
         requestIsLogin(callBackActivity, new OAuthManager.OAuthIsLoginInterface() {
             @Override
             public void responseIsLoginResult(Boolean result, String error) {
                 if (result) {
-                    oAuthRemoveInterface.responseRemoveResult(false,"");
+                    oAuthRemoveInterface.responseRemoveResult(false,"can Not Facebook OAuth Remove!!");
                 } else {
                     oAuthRemoveInterface.responseRemoveResult(true,"");
                 }
@@ -128,14 +123,11 @@ public class OAuthFacebookManager extends OAuthBaseClass {
             @Override
             public void onCompleted(JSONObject user, GraphResponse response) {
                 if (response.getError() != null) {
-                    Log.d("OAuth FACEBOOK"," REQUEST USER INFO Fail : ");
                     oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",response.getError().toString());
                 } else {
-                    Log.d("OAuth FACEBOOK"," REQUEST USER INFO Success : ");
                     String accessToken = AccessToken.getCurrentAccessToken().getToken();
                     String userId = AccessToken.getCurrentAccessToken().getUserId();
                     String result = "\nuser: \n" + user.toString()+"\n\nuserId : "+userId+"\n\n\naccessToken : "+accessToken;
-                    Log.d("OAuth FACEBOOK",result);
                     oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,result,null);
                 }
             }
@@ -151,8 +143,8 @@ public class OAuthFacebookManager extends OAuthBaseClass {
      * true : kakao 호출, fasle : 미호출
      */
     @Override
-    public Boolean requestActivityResult(int requestCode, int resultCode, Intent data) {
-        return callbackManager.onActivityResult(requestCode, resultCode, data);
+    public void requestActivityResult(int requestCode, int resultCode, Intent data) {
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
 
@@ -163,12 +155,10 @@ public class OAuthFacebookManager extends OAuthBaseClass {
         AccessToken.refreshCurrentAccessTokenAsync(new AccessToken.AccessTokenRefreshCallback() {
             @Override
             public void OnTokenRefreshed(AccessToken accessToken) {
-                Log.d(TAG,"facebookRefreshToken SUCCESS");
             }
 
             @Override
             public void OnTokenRefreshFailed(FacebookException exception) {
-                Log.d(TAG,"facebookRefreshToken FAIL");
             }
         });
     }

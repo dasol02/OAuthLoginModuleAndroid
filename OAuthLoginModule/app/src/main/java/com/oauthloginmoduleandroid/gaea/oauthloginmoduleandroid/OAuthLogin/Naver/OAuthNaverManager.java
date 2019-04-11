@@ -11,6 +11,7 @@ import com.nhn.android.naverlogin.OAuthLoginHandler;
 import com.nhn.android.naverlogin.data.OAuthLoginState;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.R;
 
 public class OAuthNaverManager extends OAuthBaseClass {
 
@@ -33,7 +34,10 @@ public class OAuthNaverManager extends OAuthBaseClass {
         // 네이버 OAuth 셋팅
         mOAuthLoginInstance = OAuthLogin.getInstance();
         mOAuthLoginInstance.showDevelopersLog(true);
-        mOAuthLoginInstance.init(callBackActivity, OAuthManager.getsInstance().getOauthClientId(), OAuthManager.getsInstance().getOauthClientSecret(), OAuthManager.getsInstance().getOauthClientName());
+        mOAuthLoginInstance.init(callBackActivity,
+                callBackActivity.getString(R.string.naver_client_id),
+                callBackActivity.getString(R.string.naver_client_secret),
+                callBackActivity.getString(R.string.naver_client_name));
     }
 
     /**
@@ -42,9 +46,9 @@ public class OAuthNaverManager extends OAuthBaseClass {
     @Override
     public void requestIsLogin(Activity callBackActivity, OAuthManager.OAuthIsLoginInterface oAuthIsLoginInterface) {
         if(OAuthLogin.getInstance().getState(callBackActivity) == OAuthLoginState.OK){
-            oAuthIsLoginInterface.responseIsLoginResult(true,"");
+            oAuthIsLoginInterface.responseIsLoginResult(true,null);
         }else{
-            oAuthIsLoginInterface.responseIsLoginResult(false,"");
+            oAuthIsLoginInterface.responseIsLoginResult(false,"Naver is Not Login");
         }
     }
 
@@ -58,7 +62,6 @@ public class OAuthNaverManager extends OAuthBaseClass {
             public void run(boolean success) {
                 if (success) {
                     String result = getrequestToken(callBackActivity);
-                    Log.d(TAG,result);
                     oAuthLoginInterface.responseLoginResult(true,result,null);
 
                 } else {
@@ -77,10 +80,8 @@ public class OAuthNaverManager extends OAuthBaseClass {
     public void requestOAuthLogout(Activity callBackActivity, OAuthManager.OAuthLogoutInterface oAuthLogoutInterface) {
         mOAuthLoginInstance.logout(callBackActivity);
         if(mOAuthLoginInstance.getState(callBackActivity) == OAuthLoginState.NEED_LOGIN){
-            Log.d(TAG,"Logout Success");
             oAuthLogoutInterface.responseLogoutResult(true);
         }else{
-            Log.d(TAG,"Logout Fail");
             oAuthLogoutInterface.responseLogoutResult(false);
         }
     }
@@ -96,13 +97,9 @@ public class OAuthNaverManager extends OAuthBaseClass {
                 boolean isSuccessDeleteToken = mOAuthLoginInstance.logoutAndDeleteToken(callBackActivity);
 
                 if (!isSuccessDeleteToken) {
-                    // 서버에서 token 삭제에 실패했어도 클라이언트에 있는 token 은 삭제되어 로그아웃된 상태이다
-                    Log.d(TAG, "naverDelete FAIL" );
-                    Log.d(TAG, "errorCode:" + mOAuthLoginInstance.getLastErrorCode(callBackActivity));
-                    Log.d(TAG, "errorDesc:" + mOAuthLoginInstance.getLastErrorDesc(callBackActivity));
+                    // 서버에서 token 삭제에 실패했어도 클라이언트에 있는 token 은 삭제되어 로그아웃된 상태
                     oAuthRemoveInterface.responseRemoveResult(true,null);
                 }else{
-                    Log.d(TAG, "naverDelete SUCCESS");
                     oAuthRemoveInterface.responseRemoveResult(true,null);
                 }
 
@@ -123,13 +120,10 @@ public class OAuthNaverManager extends OAuthBaseClass {
                 String at = mOAuthLoginInstance.getAccessToken(callBackActivity);
                 String userInfo = mOAuthLoginInstance.requestApi(callBackActivity, at, url);
                 if(TextUtils.isEmpty(userInfo)){
-                    Log.d(TAG,"requestUserInfo FAIL");
                     oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",null);
                 }else{
-                    Log.d(TAG,"requestUserInfo SUCCESS");
                     String result = getrequestToken(callBackActivity);
                     result = result+"\n\n\n"+userInfo.toString();
-                    Log.d(TAG,"requestUserInfo :"+result);
                     oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,result,null);
                 }
             }
@@ -139,8 +133,8 @@ public class OAuthNaverManager extends OAuthBaseClass {
 
 
     @Override
-    public Boolean requestActivityResult(int requestCode, int resultCode, Intent data) {
-        return false; // naver 콜백 없음
+    public void requestActivityResult(int requestCode, int resultCode, Intent data) {
+        // naver 콜백 없음
     }
 
 
@@ -152,13 +146,8 @@ public class OAuthNaverManager extends OAuthBaseClass {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
+                // TODO : RefreshToken Setting
                 String token = mOAuthLoginInstance.refreshAccessToken(callBackActivity);
-                if(TextUtils.isEmpty(token)){
-                    Log.d(TAG,"naverRefreshToken FAIL");
-                }else{
-                    Log.d(TAG,"naverRefreshToken SUCCESS");
-                    Log.d(TAG,token.toString());
-                }
             }
         });
     }

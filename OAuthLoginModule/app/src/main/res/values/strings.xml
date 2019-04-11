@@ -2,7 +2,10 @@
     <string name="app_name">OAuthLoginModuleAndroid</string>
 
     <!--로그인 모듈 Key-->
-
+    <!--네이버-->
+    <string name="naver_client_id">DMM9F1vOnLoTdfm8Qx6w</string>
+    <string name="naver_client_secret">5_uvXsmbPj</string>
+    <string name="naver_client_name">loginmoduleapp</string>
     <!--카카오-->
     <string name="kakao_app_key">3518487ea1bd3a639d1fdf1ffea5bd28</string>
     <!--페이스북-->

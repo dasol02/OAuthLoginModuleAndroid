@@ -18,7 +18,7 @@ public class GlobalApplication extends Application {
     public void onCreate() {
         super.onCreate();
         obj = this;
-        OAuthManager.getsInstance().requestStartApp("DMM9F1vOnLoTdfm8Qx6w","5_uvXsmbPj","loginmoduleapp");
+        OAuthManager.getsInstance().requestStartApp();
     }
 
     @Override

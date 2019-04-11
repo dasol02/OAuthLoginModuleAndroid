@@ -56,9 +56,9 @@ public class OAuthKakaoManager extends OAuthBaseClass {
         String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken();
         String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken();
         if(!TextUtils.isEmpty(accToken) && !TextUtils.isEmpty(refreshToken)){
-            oAuthIsLoginInterface.responseIsLoginResult(true,"");
+            oAuthIsLoginInterface.responseIsLoginResult(true,null);
         }else{
-            oAuthIsLoginInterface.responseIsLoginResult(false,"");
+            oAuthIsLoginInterface.responseIsLoginResult(false,"Kakao is not Login");
         }
     }
 
@@ -87,7 +87,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
             public void onCompleteLogout() {
                 // 로그아웃을 성공한 경우 불립니다. 서버에 로그아웃 도달과 무관하게 항상 성공
                 oAuthLogoutInterface.responseLogoutResult(true);
-                Log.d("OAuth KAKAO","requestLogout onCompleteLogout");
             }
         });
     }
@@ -108,7 +107,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 }else{
                     error = errorResult.toString();
                 }
-                Log.d("OAuth KAKAO",error);
                 oAuthRemoveInterface.responseRemoveResult(false,error);
             }
 
@@ -119,19 +117,16 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 }else{
                     error = errorResult.toString();
                 }
-                Log.d("OAuth KAKAO",error);
                 oAuthRemoveInterface.responseRemoveResult(false,error);
             }
 
             @Override
             public void onNotSignedUp() {
-                Log.d("OAuth KAKAO","onNotSignedUp");
                 oAuthRemoveInterface.responseRemoveResult(true,null);
             }
 
             @Override
             public void onSuccess(Long userId) {
-                Log.d("OAuth KAKAO","onSuccess");
                 oAuthRemoveInterface.responseRemoveResult(true,null);
             }
         });
@@ -156,7 +151,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 }else{
                     error = errorResult.toString();
                 }
-                Log.e("OAuth KAKAO", "onFailure error message=" + error);
                 oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",error);
                 super.onFailure(errorResult);
             }
@@ -170,7 +164,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 }else{
                     error = errorResult.toString();
                 }
-                Log.e("OAuth KAKAO", "onFailure error message=" + error);
                 oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"재로그인이 필요 합니다.(토큰 만료)",error);
 
             }
@@ -183,10 +176,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 userdata = userdata+"\n\n"+requestAccessTokenInfo();
 
                 oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,userdata,null);
-
-                Log.d("OAuth KAKAO", result.toString());
-                Log.d("OAuth KAKAO id = ", result.getId() + "");
-                Log.d("OAuth KAKAO email = ", result.getKakaoAccount().getEmail());
             }
 
         });
@@ -198,8 +187,8 @@ public class OAuthKakaoManager extends OAuthBaseClass {
      * true : kakao 호출, fasle : 미호출
      */
     @Override
-    public Boolean requestActivityResult(int requestCode, int resultCode, Intent data) {
-        return Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data);
+    public void requestActivityResult(int requestCode, int resultCode, Intent data) {
+        Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data);
     }
 
     /*
@@ -230,7 +219,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
         // 로그인 성공
         @Override
         public void onSessionOpened() {
-            Log.e("OAuth KAKAO", "Login onSessionOpened");
             String token = requestAccessTokenInfo();
             mOAuthLoginInterface.responseLoginResult(true,token,null);
         }
@@ -239,7 +227,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
         // 로그인 실패
         @Override
         public void onSessionOpenFailed(KakaoException exception) {
-            Log.e("OAuth KAKAO", "Login onSessionOpenFailed");
             mOAuthLoginInterface.responseLoginResult(false,null,exception.toString());
         }
 

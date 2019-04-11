@@ -11,11 +11,6 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Naver
 
 
 public class OAuthManager {
-    // Naver Client 정보
-    private String OAUTH_NAVER_CLIENT_ID;
-    private String OAUTH_NAVER_CLIENT_SECRET;
-    private String OAUTH_NAVER_CLIENT_NAME;
-
     private OAuthBaseClass oAuthClass; // OAuth 클랙스
 
     private static OAuthManager sInstance;
@@ -31,60 +26,9 @@ public class OAuthManager {
         return sInstance;
     }
 
-    // 앱실행
-    public void requestStartApp(@NonNull String oAuthNaverClientID, @NonNull String oAuthNaverClientSecret, @NonNull String oAuthNaverClientName){
-        this.OAUTH_NAVER_CLIENT_ID = oAuthNaverClientID;
-        this.OAUTH_NAVER_CLIENT_SECRET = oAuthNaverClientSecret;
-        this.OAUTH_NAVER_CLIENT_NAME = oAuthNaverClientName;
-
-        new OAuthKakaoManager().requestStartAppOAuth();
-        new OAuthNaverManager().requestStartAppOAuth();
-        new OAuthFacebookManager().requestStartAppOAuth();
-        new OAuthGoogleManager().requestStartAppOAuth();
-    }
-
-    // 앱 종료
-    public void requestDidApp(){
-        new OAuthKakaoManager().requestDidAppOAuth();
-        new OAuthNaverManager().requestDidAppOAuth();
-        new OAuthFacebookManager().requestDidAppOAuth();
-        new OAuthGoogleManager().requestDidAppOAuth();
-    }
-
     /**
-     * 로그인 여부
+     * OAuth Class 생성
      */
-    public void getLoginState(@NonNull Activity callBackActivity, @NonNull final OAuthIsLoginInterface oAuthIsLoginInterface) {
-        if(oAuthClass == null){
-            oAuthIsLoginInterface.responseIsLoginResult(false,"");
-            return;
-        }
-        oAuthClass.requestIsLogin(callBackActivity, new OAuthIsLoginInterface() {
-            @Override
-            public void responseIsLoginResult(Boolean result, String error) {
-                oAuthIsLoginInterface.responseIsLoginResult(result,error);
-            }
-        });
-    }
-
-    /**
-     * 로그인 시도
-     * @param oAuthType : 연동사 이름 변수
-     */
-    public void requestSNSLogin(@NonNull OAuthBaseClass.OAuthType oAuthType, @NonNull Activity callBackActivity, @NonNull final OAuthLoginInterface oAuthLoginInterface) {
-        oAuthClass = createOAuthClass(oAuthType);
-        if(oAuthClass == null){ return; }
-        oAuthClass.initOAuthSDK(callBackActivity);
-        oAuthClass.requestOAuthLogin(callBackActivity, new OAuthLoginInterface() {
-            @Override
-            public void responseLoginResult(Boolean result, String token, String error) {
-                // 로그인 결과
-                oAuthLoginInterface.responseLoginResult(result, token, error);
-            }
-        });
-    }
-
-    // OAuth Class 생성
     private OAuthBaseClass createOAuthClass(OAuthBaseClass.OAuthType oAuthType) {
 
         OAuthBaseClass oAuthBaseClassResult = null;
@@ -110,37 +54,62 @@ public class OAuthManager {
     }
 
     /**
+     * 앱실행
+     */
+    public void requestStartApp(){
+        new OAuthKakaoManager().requestStartAppOAuth();
+        new OAuthNaverManager().requestStartAppOAuth();
+        new OAuthFacebookManager().requestStartAppOAuth();
+        new OAuthGoogleManager().requestStartAppOAuth();
+    }
+
+    /**
+     * 앱 종료
+     */
+    public void requestDidApp(){
+        new OAuthKakaoManager().requestDidAppOAuth();
+        new OAuthNaverManager().requestDidAppOAuth();
+        new OAuthFacebookManager().requestDidAppOAuth();
+        new OAuthGoogleManager().requestDidAppOAuth();
+    }
+
+    /**
+     * 로그인 여부 확인
+     */
+    public void requestOAuthIsLogin(@NonNull Activity callBackActivity, @NonNull final OAuthIsLoginInterface oAuthIsLoginInterface) {
+        if(oAuthClass == null){ oAuthIsLoginInterface.responseIsLoginResult(false,"OAuth Class NUll"); return; } // OAuth Class Null
+        oAuthClass.requestIsLogin(callBackActivity, oAuthIsLoginInterface); // OAuth Is Login
+    }
+
+    /**
+     * 로그인 시도
+     * @param oAuthType : 연동사 이름 변수
+     */
+    public void requestSNSLogin(@NonNull OAuthBaseClass.OAuthType oAuthType, @NonNull Activity callBackActivity, @NonNull final OAuthLoginInterface oAuthLoginInterface) {
+        oAuthClass = createOAuthClass(oAuthType); // OAuth Class Create
+        if(oAuthClass == null){ oAuthLoginInterface.responseLoginResult(false,null,"OAuth Type Fail"); return; } // OAuth Create Fail
+        oAuthClass.initOAuthSDK(callBackActivity); // SDK Setting
+        oAuthClass.requestOAuthLogin(callBackActivity, oAuthLoginInterface); // OAuth Login
+    }
+
+    /**
      * 로그 아웃
      */
     public void requestSNSLogOut(@NonNull Activity callBackActivity, @NonNull final OAuthLogoutInterface oAuthLogoutInterface){
-        if(oAuthClass == null){return;}
-         oAuthClass.requestOAuthLogout(callBackActivity, new OAuthLogoutInterface() {
-             @Override
-             public void responseLogoutResult(Boolean result) {
-                 // 로그아웃 결과
-                 oAuthLogoutInterface.responseLogoutResult(result);
-             }
-         });
+        if(oAuthClass == null){ oAuthLogoutInterface.responseLogoutResult(false); return;}
+         oAuthClass.requestOAuthLogout(callBackActivity, oAuthLogoutInterface); // OAuth Logout
     }
-
 
     /**
      * 연동사 해제
      */
     public void requestSNSDelete(@NonNull Activity callBackActivity, @NonNull final OAuthRemoveInterface oAuthRemoveInterface){
-        if(oAuthClass == null){return;}
-        oAuthClass.requestOAuthRemove(callBackActivity, new OAuthRemoveInterface() {
-            @Override
-            public void responseRemoveResult(Boolean result, String error) {
-                // 연동해제 결과
-                oAuthRemoveInterface.responseRemoveResult(result, error);
-            }
-        });
+        if(oAuthClass == null){ oAuthRemoveInterface.responseRemoveResult(false,"OAuth Class NULL"); return;}
+        oAuthClass.requestOAuthRemove(callBackActivity, oAuthRemoveInterface);
     }
 
     /**
      * 연동사 로그인 페이지 연결
-     * @return -> true: 연동사 App 또는 웹뷰 진행, fasle : super진행
      */
     public void responseOnActivityResult(int requestCode, int resultCode, Intent data){
         if(oAuthClass == null){return;};
@@ -152,30 +121,8 @@ public class OAuthManager {
      * 사용자 정보 호출
      */
     public void requestUserFrofileInfo(@NonNull Activity callBackActivity, @NonNull final OAuthUserFrofileInterface oAuthUserFrofileInterface){
-        if(oAuthClass == null){return;}
-        oAuthClass.requestUserInfo(callBackActivity, new OAuthUserFrofileInterface() {
-            @Override
-            public void responseUserFrofileInfoResult(Boolean result, String userinfo, String error) {
-                // 사용자 정보 요청 결과
-                oAuthUserFrofileInterface.responseUserFrofileInfoResult(result, userinfo, error);
-            }
-        });
-    }
-
-
-    /** OAuth Client Setting Getter
-     * @return 호출 이름
-     */
-    public String getOauthClientId() {
-        return OAUTH_NAVER_CLIENT_ID;
-    }
-
-    public String getOauthClientSecret() {
-        return OAUTH_NAVER_CLIENT_SECRET;
-    }
-
-    public String getOauthClientName() {
-        return OAUTH_NAVER_CLIENT_NAME;
+        if(oAuthClass == null){ oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,"OAuth Class NUll"); return;}
+        oAuthClass.requestUserInfo(callBackActivity, oAuthUserFrofileInterface);
     }
 
 
@@ -210,6 +157,7 @@ public class OAuthManager {
          */
         void responseLogoutResult(Boolean result);
     }
+
     // 인터페이스 (연동해제)
     public interface OAuthRemoveInterface {
         /**

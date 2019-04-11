@@ -53,9 +53,9 @@ public class OAuthGoogleManager extends OAuthBaseClass {
     public void requestIsLogin(Activity callBackActivity, OAuthManager.OAuthIsLoginInterface oAuthIsLoginInterface) {
         mAccount = GoogleSignIn.getLastSignedInAccount(callBackActivity);
         if (mAccount == null) {
-            oAuthIsLoginInterface.responseIsLoginResult(false,"");
+            oAuthIsLoginInterface.responseIsLoginResult(false,"Google Is not login");
         } else {
-            oAuthIsLoginInterface.responseIsLoginResult(true,"");
+            oAuthIsLoginInterface.responseIsLoginResult(true,null);
         }
     }
 
@@ -94,7 +94,6 @@ public class OAuthGoogleManager extends OAuthBaseClass {
      */
     @Override
     public void requestOAuthRemove(Activity callBackActivity, final OAuthManager.OAuthRemoveInterface oAuthRemoveInterface) {
-        Log.d(TAG, " Delete TRY");
         requestIsLogin(callBackActivity, new OAuthManager.OAuthIsLoginInterface() {
             @Override
             public void responseIsLoginResult(Boolean result, String error) {
@@ -118,13 +117,11 @@ public class OAuthGoogleManager extends OAuthBaseClass {
      * true : 호출, fasle : 미호출
      */
     @Override
-    public Boolean requestActivityResult(int requestCode, int resultCode, Intent data) {
+    public void requestActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == OAUTH_GOOGLE_CLIENT_FOR_RESULT) {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             handleSignInResult(task);
-            return false; // 구글 핸들러 사용으로 인한 반환값 False;
-        } else {
-            return true;
+            // 구글 핸들러 사용으로 인한 반환값 False;
         }
     }
 
@@ -148,7 +145,6 @@ public class OAuthGoogleManager extends OAuthBaseClass {
             userdata = userdata+result;
 
             oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,userdata,null);
-            Log.d(TAG, userdata);
         }else{
             oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,null);
         }
@@ -165,9 +161,8 @@ public class OAuthGoogleManager extends OAuthBaseClass {
             String accessToken = mAccount.getIdToken();
             String userId = mAccount.getId();
             String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
-            mOAuthLoginInterface.responseLoginResult(true,result,"");
+            mOAuthLoginInterface.responseLoginResult(true,result,null);
         } catch (ApiException e) {
-            Log.w(TAG, " login Fail \ncode=" + e.getStatusCode());
             mOAuthLoginInterface.responseLoginResult(false,"",String.valueOf(e.getStatusCode()));
         }
     }
