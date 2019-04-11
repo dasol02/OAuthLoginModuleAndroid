@@ -15,17 +15,16 @@ import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserInfo;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;
 
 public class OAuthFacebookManager extends OAuthBaseClass {
 
- private static final String TAG = "OAuth Facebok";
-
     private static CallbackManager callbackManager;
-
 
     @Override
     public void requestStartAppOAuth() {
@@ -61,9 +60,7 @@ public class OAuthFacebookManager extends OAuthBaseClass {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 String accessToken = loginResult.getAccessToken().getToken();
-                String userId = loginResult.getAccessToken().getUserId();
-                String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
-                oAuthLoginInterface.responseLoginResult(true, result, null);
+                oAuthLoginInterface.responseLoginResult(true, accessToken, null);
             }
 
             @Override
@@ -123,12 +120,22 @@ public class OAuthFacebookManager extends OAuthBaseClass {
             @Override
             public void onCompleted(JSONObject user, GraphResponse response) {
                 if (response.getError() != null) {
-                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",response.getError().toString());
+                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,response.getError().toString());
                 } else {
-                    String accessToken = AccessToken.getCurrentAccessToken().getToken();
-                    String userId = AccessToken.getCurrentAccessToken().getUserId();
-                    String result = "\nuser: \n" + user.toString()+"\n\nuserId : "+userId+"\n\n\naccessToken : "+accessToken;
-                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,result,null);
+                    OAuthUserInfo oAuthUserInfo = new OAuthUserInfo(
+                            user.optString("name"),
+                            AccessToken.getCurrentAccessToken().getUserId(),
+                            null,
+                            user.optString("email"),
+                            null,
+                            null,
+                            null,
+                            null,
+                            AccessToken.getCurrentAccessToken().getToken(),
+                            null,
+                            null
+                    );
+                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(true, oAuthUserInfo,null);
                 }
             }
         });
@@ -147,7 +154,6 @@ public class OAuthFacebookManager extends OAuthBaseClass {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-
     /**
      * 페이스북 토큰 갱신
      */
@@ -155,23 +161,14 @@ public class OAuthFacebookManager extends OAuthBaseClass {
         AccessToken.refreshCurrentAccessTokenAsync(new AccessToken.AccessTokenRefreshCallback() {
             @Override
             public void OnTokenRefreshed(AccessToken accessToken) {
+                // TODO : RefreshToken Setting
             }
 
             @Override
             public void OnTokenRefreshFailed(FacebookException exception) {
+                // TODO : RefreshToken Setting
             }
         });
     }
 
-
-    /**
-     * 페이스북 저장되어 있는 토큰 정보 호출
-     * @return
-     */
-    public String getrequestToken(){
-        String accessToken = AccessToken.getCurrentAccessToken().toString();
-        String userId = AccessToken.getCurrentAccessToken().getUserId();
-        String result = "\n\naccessToken = "+accessToken+"\n\nuserId = "+userId;
-        return result;
-    }
 }

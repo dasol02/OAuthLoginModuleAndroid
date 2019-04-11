@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserInfo;
 
 
 public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener{
@@ -158,18 +159,18 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         // 사용자 정보 조회
         OAuthManager.getsInstance().requestUserFrofileInfo(this, new OAuthManager.OAuthUserFrofileInterface() {
             @Override
-            public void responseUserFrofileInfoResult(Boolean result, final String userinfo, String error) {
+            public void responseUserFrofileInfoResult(Boolean result, final OAuthUserInfo oAuthUserInfo, String error) {
                 if(result){
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             text_title_user_frofile.setText("사용자 정보");
-                            text_user_frofile.setText(userinfo);
+                            text_user_frofile.setText(oAuthUserInfo.toString());
                         }
                     });
 
                 }else{
-                    showToastMsg("UserFrofile","정보 조회 실패 : "+userinfo);
+                    showToastMsg("UserFrofile","정보 조회 실패 : ");
                 }
             }
         });

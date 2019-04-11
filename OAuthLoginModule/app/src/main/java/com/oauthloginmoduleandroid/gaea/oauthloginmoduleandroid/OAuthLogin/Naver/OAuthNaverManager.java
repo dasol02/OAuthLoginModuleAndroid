@@ -11,13 +11,18 @@ import com.nhn.android.naverlogin.OAuthLoginHandler;
 import com.nhn.android.naverlogin.data.OAuthLoginState;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserInfo;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.HashMap;
 
 public class OAuthNaverManager extends OAuthBaseClass {
 
-    private static final String TAG = "OAuth Naver";
     private static OAuthLogin mOAuthLoginInstance;
-
 
     @Override
     public void requestStartAppOAuth() {
@@ -61,8 +66,9 @@ public class OAuthNaverManager extends OAuthBaseClass {
             @Override
             public void run(boolean success) {
                 if (success) {
-                    String result = getrequestToken(callBackActivity);
-                    oAuthLoginInterface.responseLoginResult(true,result,null);
+                    String accessToken = mOAuthLoginInstance.getAccessToken(callBackActivity);
+                    String refreshToken = mOAuthLoginInstance.getRefreshToken(callBackActivity);
+                    oAuthLoginInterface.responseLoginResult(true, accessToken,null);
 
                 } else {
                     String errorCode = mOAuthLoginInstance.getLastErrorCode(callBackActivity).getCode();
@@ -120,23 +126,42 @@ public class OAuthNaverManager extends OAuthBaseClass {
                 String at = mOAuthLoginInstance.getAccessToken(callBackActivity);
                 String userInfo = mOAuthLoginInstance.requestApi(callBackActivity, at, url);
                 if(TextUtils.isEmpty(userInfo)){
-                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",null);
+                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,"사용자 정보 조회 실패");
                 }else{
-                    String result = getrequestToken(callBackActivity);
-                    result = result+"\n\n\n"+userInfo.toString();
-                    oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,result,null);
+                    OAuthUserInfo oAuthUserInfo = null;
+                    Boolean pasarResult = true;
+                    try {
+                        JSONObject jsonObject = new JSONObject(userInfo).getJSONObject("response");
+                        oAuthUserInfo = new OAuthUserInfo(
+                                jsonObject.optString("name"),
+                                jsonObject.optString("id"),
+                                jsonObject.optString("gender"),
+                                jsonObject.optString("email"),
+                                null,
+                                jsonObject.optString("age"),
+                                jsonObject.optString("birthday12321"),
+                                null,
+                                mOAuthLoginInstance.getAccessToken(callBackActivity),
+                                mOAuthLoginInstance.getRefreshToken(callBackActivity),
+                                null
+                        );
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        pasarResult = false;
+                    } finally {
+                        oAuthUserFrofileInterface.responseUserFrofileInfoResult(pasarResult, oAuthUserInfo,null);
+                    }
+
                 }
             }
         });
     }
 
 
-
     @Override
     public void requestActivityResult(int requestCode, int resultCode, Intent data) {
         // naver 콜백 없음
     }
-
 
 
     /**
@@ -152,14 +177,4 @@ public class OAuthNaverManager extends OAuthBaseClass {
         });
     }
 
-    /**
-     * 네이버 저장되어 있는 토큰 정보 호출
-     */
-    private String getrequestToken(Activity callBackActivity){
-        String accessToken = mOAuthLoginInstance.getAccessToken(callBackActivity);
-        String refreshToken = mOAuthLoginInstance.getRefreshToken(callBackActivity);
-        long expiresAt = mOAuthLoginInstance.getExpiresAt(callBackActivity);
-        String tokenType = mOAuthLoginInstance.getTokenType(callBackActivity);
-        return "\n\naccessToken = "+accessToken+"\n\nrefreshToken = "+refreshToken+"\n\nexpiresAt = "+String.valueOf(expiresAt)+"\n\ntokenType = "+tokenType;
-    }
 }

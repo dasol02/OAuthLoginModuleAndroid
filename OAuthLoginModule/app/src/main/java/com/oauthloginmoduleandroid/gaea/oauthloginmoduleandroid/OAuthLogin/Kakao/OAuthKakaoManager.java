@@ -24,6 +24,7 @@ import com.kakao.util.exception.KakaoException;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.GlobalApplication;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +152,7 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 }else{
                     error = errorResult.toString();
                 }
-                oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"사용자 정보 호출 실패",error);
+                oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,error);
                 super.onFailure(errorResult);
             }
 
@@ -164,18 +165,29 @@ public class OAuthKakaoManager extends OAuthBaseClass {
                 }else{
                     error = errorResult.toString();
                 }
-                oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,"재로그인이 필요 합니다.(토큰 만료)",error);
+                oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,error);
 
             }
 
             @Override
             public void onSuccess(MeV2Response result) {
-                String userdata = "";
-                userdata = userdata+"\n "+"id = "+String.valueOf(result.getId());
-                userdata = userdata+"\n "+"email = "+result.getKakaoAccount().getEmail();
-                userdata = userdata+"\n\n"+requestAccessTokenInfo();
 
-                oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,userdata,null);
+                OAuthUserInfo oAuthUserInfo = new OAuthUserInfo(
+                        null,
+                        String.valueOf(result.getId()),
+                        null,
+                        result.getKakaoAccount().getEmail(),
+                        result.getNickname(),
+                        null,
+                        null,
+                        result.getProfileImagePath(),
+                        Session.getCurrentSession().getTokenInfo().getAccessToken(),
+                        Session.getCurrentSession().getTokenInfo().getRefreshToken(),
+                        null
+                );
+
+
+                oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,oAuthUserInfo,null);
             }
 
         });
@@ -191,25 +203,6 @@ public class OAuthKakaoManager extends OAuthBaseClass {
         Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data);
     }
 
-    /*
-     ** kakao 토근 정보 얻기
-     */
-    private String requestAccessTokenInfo() {
-        String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken();
-        String refreshToken = Session.getCurrentSession().getTokenInfo().getRefreshToken();
-
-        if(TextUtils.isEmpty(accToken)){
-            accToken = "NUll";
-        }
-
-        if(TextUtils.isEmpty(refreshToken)){
-            refreshToken = "NUll";
-        }
-
-        return "onAccessTokenReceived =\n\naccToken = \n"+accToken+"\n\nrefreshToken = \n"+refreshToken;
-    }
-
-
 
     /*
      ** 카카오 로그인 콜백
@@ -219,8 +212,8 @@ public class OAuthKakaoManager extends OAuthBaseClass {
         // 로그인 성공
         @Override
         public void onSessionOpened() {
-            String token = requestAccessTokenInfo();
-            mOAuthLoginInterface.responseLoginResult(true,token,null);
+            String accToken = Session.getCurrentSession().getTokenInfo().getAccessToken();
+            mOAuthLoginInterface.responseLoginResult(true, accToken,null);
         }
 
 

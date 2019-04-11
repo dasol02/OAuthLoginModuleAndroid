@@ -14,6 +14,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthBaseClass;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
+import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserInfo;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.R;
 
 
@@ -21,7 +22,6 @@ public class OAuthGoogleManager extends OAuthBaseClass {
 
     protected static int OAUTH_GOOGLE_CLIENT_FOR_RESULT = 9901; // Google Activity ForResult
 
-    private static final String TAG = "OAuth Google";
     private GoogleSignInClient mGoogleSignInClient;
     private GoogleSignInAccount mAccount;
     private OAuthManager.OAuthLoginInterface mOAuthLoginInterface;
@@ -136,15 +136,21 @@ public class OAuthGoogleManager extends OAuthBaseClass {
         mAccount = GoogleSignIn.getLastSignedInAccount(callBackActivity);
         if (mAccount != null) {
 
-            String userdata = "\n";
-            userdata = userdata+"\n"+"email = "+mAccount.getEmail();
-            userdata = userdata+"\n"+"name = "+mAccount.getDisplayName();
-            String accessToken = mAccount.getIdToken();
-            String userId = mAccount.getId();
-            String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
-            userdata = userdata+result;
+            OAuthUserInfo oAuthUserInfo = new OAuthUserInfo(
+                    mAccount.getFamilyName()+mAccount.getGivenName(),
+                    mAccount.getId(),
+                    null,
+                    mAccount.getEmail(),
+                    mAccount.getDisplayName(),
+                    null,
+                    null,
+                    mAccount.getPhotoUrl().toString(),
+                    mAccount.getIdToken(),
+                    null,
+                    null
+            );
 
-            oAuthUserFrofileInterface.responseUserFrofileInfoResult(true,userdata,null);
+            oAuthUserFrofileInterface.responseUserFrofileInfoResult(true, oAuthUserInfo,null);
         }else{
             oAuthUserFrofileInterface.responseUserFrofileInfoResult(false,null,null);
         }
@@ -158,10 +164,7 @@ public class OAuthGoogleManager extends OAuthBaseClass {
     private void handleSignInResult(Task<GoogleSignInAccount> task) {
         try {
             mAccount = task.getResult(ApiException.class);
-            String accessToken = mAccount.getIdToken();
-            String userId = mAccount.getId();
-            String result = "\nuserId : " + userId + "\naccessToken : " + accessToken;
-            mOAuthLoginInterface.responseLoginResult(true,result,null);
+            mOAuthLoginInterface.responseLoginResult(true, mAccount.getIdToken(),null);
         } catch (ApiException e) {
             mOAuthLoginInterface.responseLoginResult(false,"",String.valueOf(e.getStatusCode()));
         }
@@ -177,25 +180,9 @@ public class OAuthGoogleManager extends OAuthBaseClass {
                     @Override
                     public void onComplete(@NonNull Task<GoogleSignInAccount> task) {
                         handleSignInResult(task);
+                        // TODO : RefreshToken Setting
                     }
                 });
     }
-
-
-//    /**
-//     * Google 저장되어 있는 토큰 정보 호출
-//     *
-//     * @return
-//     */
-//    public String getrequestToken() {
-//        mAccount = GoogleSignIn.getLastSignedInAccount(mResponseActivity);
-//        String accessToken = mAccount.getIdToken();
-//        String userId = mAccount.getId();
-//        String result = "\nuserId : " + userId + "\n\naccessToken : " + accessToken;
-//        return result;
-//    }
-
-
-
 }
 

@@ -173,10 +173,10 @@ public class OAuthManager {
         /**
          * 사용자 정보 CallBack
          * @param result : 결과 (True, False)
-         * @param userinfo : 사용자 정보
+         * @param oAuthUserInfo : 사용자 정보
          * @param error : 오류 내용
          */
-        void responseUserFrofileInfoResult(Boolean result, String userinfo, String error);
+        void responseUserFrofileInfoResult(Boolean result, OAuthUserInfo oAuthUserInfo, String error);
     }
 
 }
