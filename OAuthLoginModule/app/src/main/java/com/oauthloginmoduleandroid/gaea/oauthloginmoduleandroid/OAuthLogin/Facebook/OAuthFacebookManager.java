@@ -3,7 +3,6 @@ package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Face
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
@@ -17,7 +16,6 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuth
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthUserInfo;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Arrays;

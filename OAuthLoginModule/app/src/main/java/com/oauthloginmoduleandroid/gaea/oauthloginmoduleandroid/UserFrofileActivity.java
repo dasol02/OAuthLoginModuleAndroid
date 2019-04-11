@@ -20,7 +20,7 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuth
 public class UserFrofileActivity extends AppCompatActivity implements View.OnClickListener{
 
     Button button_lougot,button_delete;
-    TextView text_title_user_frofile,text_user_frofile;
+    TextView text_user_frofile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,7 +40,6 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         button_delete = (Button)findViewById(R.id.button_delete);
         button_delete.setOnClickListener(this);
 
-        text_title_user_frofile = (TextView)findViewById(R.id.text_title_user_frofile);
         text_user_frofile = (TextView)findViewById(R.id.text_user_frofile);
     }
 
@@ -99,6 +98,19 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
         return mSNSName;
     }
 
+    /**
+     * 연동 실패시 Toast 메시지 노출
+     * @param tag 호출 API 이름
+     * @param msg 에러 내용
+     */
+    private void showToastMsg(final String tag,final String msg){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(getApplicationContext(),tag+" : "+msg,Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     // 버튼 이벤트 생성 (로그아웃, 로그인)
     @Override
@@ -145,7 +157,7 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
                 if(result){
                     finish();
                 }else{
-                    showToastMsg("Remove","연동해제 실패 : "+error);
+                    showToastMsg("Remove",error);
                 }
             }
         });
@@ -164,31 +176,15 @@ public class UserFrofileActivity extends AppCompatActivity implements View.OnCli
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            text_title_user_frofile.setText("사용자 정보");
                             text_user_frofile.setText(oAuthUserInfo.toString());
                         }
                     });
 
                 }else{
-                    showToastMsg("UserFrofile","정보 조회 실패 : ");
+                    showToastMsg("UserFrofile",error);
                 }
             }
         });
     }
 
-
-
-    /**
-     * 연동 실패시 Toast 메시지 노출
-     * @param tag 호출 API 이름
-     * @param msg 에러 내용
-     */
-    private void showToastMsg(final String tag,final String msg){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(getApplicationContext(),tag+" : "+msg,Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 }

@@ -1,11 +1,6 @@
 package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin;
 
-import com.google.android.gms.common.annotation.KeepName;
-
-import java.lang.annotation.Retention;
-
 public class OAuthUserInfo {
-
     private String userName;
     private String userID;
     private String userGender;

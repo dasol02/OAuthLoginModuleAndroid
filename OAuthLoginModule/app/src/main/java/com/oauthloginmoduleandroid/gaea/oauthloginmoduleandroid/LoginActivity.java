@@ -23,12 +23,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         initViewBinding();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        OAuthManager.getsInstance().responseOnActivityResult(requestCode,resultCode,data);
-    }
-
     // XML 이벤트 바인딩
     public void initViewBinding(){
         button_login_kakao = (Button)findViewById(R.id.button_login_kakao);
@@ -65,6 +59,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         requestOAuthLogin(oAuthType);
     }
 
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        OAuthManager.getsInstance().responseOnActivityResult(requestCode,resultCode,data);
+    }
 
     /**
      * 로그인 시도
