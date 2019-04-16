@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">OAuthLoginModuleAndroid</string>
-
     <!--로그인 모듈 Key-->
     <!--네이버-->
     <string name="naver_client_id">DMM9F1vOnLoTdfm8Qx6w</string>
@@ -13,5 +12,4 @@
     <string name="fb_login_protocol_scheme">fb1750035155124396</string>
     <!--구글-->
     <string name="server_client_id">463686728262-joq7d8o5ddt2lncjcq92cclepr95pikd.apps.googleusercontent.com</string>
-
 </resources>

@@ -2,8 +2,6 @@ package com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid;
 
 import android.app.Application;
 
-import com.kakao.auth.KakaoSDK;
-import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.Kakao.OAuthKakaoManager;
 import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuthManager;
 
 public class GlobalApplication extends Application {

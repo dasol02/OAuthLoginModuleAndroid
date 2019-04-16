@@ -28,24 +28,11 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
     /*카카오*/
-    implementation group: 'com.kakao.sdk', name: 'usermgmt', version: project.KAKAO_SDK_VERSION  // 카카오 로그인 sdk를 사용하기 위해 필요.
-
-
+    implementation group: 'com.kakao.sdk', name: 'usermgmt', version: '1.13.0'
     /*네이버*/
-    implementation project(path: ':naveridlogin_android_sdk_4.2.0')
-    def support_version = '27.1.1'
-    implementation "com.android.support:appcompat-v7:${support_version}"
-    implementation "com.android.support:support-core-utils:${support_version}"
-    implementation "com.android.support:customtabs:${support_version}"
-    implementation "com.android.support:support-v4:${support_version}"
-
+    implementation 'com.naver.nid:naveridlogin-android-sdk:4.2.5'
     /*페이스북*/
     implementation 'com.facebook.android:facebook-login:[4,5)'
-
-
     /*구글*/
     implementation 'com.google.android.gms:play-services-auth:15.0.1'
-
-
-
 }
