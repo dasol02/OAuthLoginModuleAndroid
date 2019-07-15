@@ -1,8 +1,8 @@
-# SNS OAuth Login Manager Developer Guide 
+# SNS OAuth Login Manager Guide 
 
-OAuth Manager은 Android, iOS의 OS에서 SNS OAuth Login 개발을 
+OAuth Manager은 Android의 OS에서 SNS OAuth Login 개발을 
 
-각 연동사 별로 구현없이 하나의 Manager를 이용하여 연동할 수 있게 개발되었다.
+각 연동사 별로 구현없이 하나의 Manager 연동 개발 모듈
 
 개발 가이드는 아래 방법에 따라 진행 한다.
 ```ruby
@@ -211,13 +211,11 @@ import com.oauthloginmoduleandroid.gaea.oauthloginmoduleandroid.OAuthLogin.OAuth
 [앱 등록 페이지](https://developers.facebook.com/?advanced_app_create=true)(내앱 - 새 앱 추가)
 
 ### Google
-구글 API 콘솔 프로젝트 등록 및 구성([Android](https://developers.google.com/identity/sign-in/android/start-integrating), [iOS](https://developers.google.com/identity/sign-in/ios/start-integrating))에 따라 사용하고자 하는 앱서비스를 등록한다.
+구글 API 콘솔 프로젝트 등록 및 구성([Android](https://developers.google.com/identity/sign-in/android/start-integrating)) 에 따라 앱서비스를 등록한다.
 
 
 
 ## SDK 설정
-
-### Android
 **build.gradle 설정 (App)**
 ```ruby
 android {
@@ -306,8 +304,6 @@ allprojects {
 ```
 # SNS Login App Key 설정
 
-## Android
-
 **Naver**
 ```
 네이버 자체 클라이언트 아이디 및 시크릿 아이디로 등록
@@ -324,7 +320,6 @@ debug, release Key 등록 필수
 ```
 자체 클라이언트 ID로 등록
 ```
-## iOS
 
 # SNS Login App 검수
 ## Naver
